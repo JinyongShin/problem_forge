@@ -30,3 +30,11 @@ tasks/
 
 # cursor 
 .cursor
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+build/
+dist/
