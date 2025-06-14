@@ -3,6 +3,33 @@ import ChatSidebar from './components/ChatSidebar';
 import ChatWindow from './components/ChatWindow';
 import ChatInput from './components/ChatInput';
 import axios from 'axios';
+// uuid 패키지가 필요합니다. (npm install uuid)
+import { v4 as uuidv4 } from 'uuid';
+
+// 로그 버퍼 및 저장 함수 추가
+let logBuffer = [];
+
+function saveLogToFile() {
+  const blob = new Blob([logBuffer.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'frontend_log.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+const origConsoleLog = console.log;
+console.log = function(...args) {
+  logBuffer.push(
+    args.map(arg =>
+      typeof arg === 'object' && arg !== null
+        ? JSON.stringify(arg, null, 2)
+        : String(arg)
+    ).join(' ')
+  );
+  origConsoleLog.apply(console, args);
+};
 
 function App() {
   // 빈 대화로 시작
@@ -15,7 +42,8 @@ function App() {
   // 앱 최초 렌더링 시 새 대화 자동 생성 및 선택
   useEffect(() => {
     if (chats.length === 0) {
-      const newChat = { id: 1, title: '새 대화', messages: [] };
+      const newSessionId = uuidv4();
+      const newChat = { id: 1, title: '새 대화', messages: [], sessionId: newSessionId };
       setChats([newChat]);
       setSelectedChatId(1);
     }
@@ -31,7 +59,8 @@ function App() {
 
   const handleNewChat = () => {
     const newId = chats.length > 0 ? Math.max(...chats.map(c => c.id)) + 1 : 1;
-    const newChat = { id: newId, title: '새 대화', messages: [] };
+    const newSessionId = uuidv4();
+    const newChat = { id: newId, title: '새 대화', messages: [], sessionId: newSessionId };
     setChats([newChat, ...chats]);
     setSelectedChatId(newId);
     setInputValue('');
@@ -83,14 +112,14 @@ function App() {
     setAttachedFiles([]);
 
     // 실제 환경에 맞게 app_name, user_id, session_id를 관리해야 함
-    const appName = "problem_forge"; // agents 폴더명과 일치해야 함
+    const appName = "agent"; // agents 폴더명과 일치해야 함
     const userId = "test_user";
-    const sessionId = "test-session";
+    const sessionId = selectedChat?.sessionId || "test-session";
     const requestBody = {
-      app_name: appName,
-      user_id: userId,
-      session_id: sessionId,
-      new_message: {
+      appName: appName,
+      userId: userId,
+      sessionId: sessionId,
+      newMessage: {
         role: "user",
         parts: [{ text }]
       },
@@ -101,18 +130,26 @@ function App() {
     // /run 호출을 함수로 분리
     const callRun = async () => {
       const res = await axios.post('/run', requestBody);
+      console.log("[서버 응답]:", res.data);
       if (!Array.isArray(res.data)) {
         setErrorMessage("서버에서 올바른 응답을 받지 못했습니다. (Event 배열 아님)");
+        console.log("서버 응답:", res.data);
         return;
       }
       if (res.data.length === 0) {
         setErrorMessage("서버에서 이벤트가 반환되지 않았습니다. 세션 또는 agent 구성을 확인하세요.");
         return;
       }
-      const lastAssistantEvent = [...res.data].reverse().find(
-        ev => ev.author === "assistant" && ev.content && ev.content.text
+      // role이 'model'인 마지막 메시지 추출 (content 내부)
+      const lastModelEvent = [...res.data].reverse().find(
+        ev =>
+          ev.content &&
+          ev.content.role === "model" &&
+          Array.isArray(ev.content.parts) &&
+          ev.content.parts[0] &&
+          ev.content.parts[0].text
       );
-      const assistantText = lastAssistantEvent?.content?.text || "답변을 가져오지 못했습니다. (assistant 메시지 없음)";
+      const assistantText = lastModelEvent?.content?.parts?.[0]?.text || "답변을 가져오지 못했습니다. (assistant 메시지 없음)";
       const assistantMessage = {
         type: 'text',
         text: assistantText,
@@ -120,17 +157,33 @@ function App() {
         timestamp: new Date(),
         role: 'assistant',
       };
-      setChats(chats => chats.map(chat =>
-        chat.id === selectedChatId
-          ? {
-              ...chat,
-              messages: [
-                ...chat.messages,
-                assistantMessage,
-              ],
+      // functionResponse.result가 있으면 추가로 메시지로 출력
+      let functionResultText = null;
+      for (const ev of res.data) {
+        if (ev.content && Array.isArray(ev.content.parts)) {
+          for (const part of ev.content.parts) {
+            if (part.functionResponse && part.functionResponse.response && part.functionResponse.response.result) {
+              functionResultText = part.functionResponse.response.result;
+              break;
             }
-          : chat
-      ));
+          }
+        }
+        if (functionResultText) break;
+      }
+      setChats(chats => chats.map(chat => {
+        if (chat.id !== selectedChatId) return chat;
+        let newMessages = [...chat.messages, assistantMessage];
+        if (functionResultText) {
+          newMessages.push({
+            type: 'text',
+            text: functionResultText,
+            files: [],
+            timestamp: new Date(),
+            role: 'assistant',
+          });
+        }
+        return { ...chat, messages: newMessages };
+      }));
       setErrorMessage("");
     };
 
@@ -176,7 +229,15 @@ function App() {
   };
 
   // 대화 삭제 핸들러
-  const handleDeleteChat = (id) => {
+  const handleDeleteChat = async (id) => {
+    const chatToDelete = chats.find(chat => chat.id === id);
+    if (chatToDelete && chatToDelete.sessionId) {
+      try {
+        await axios.delete(`/apps/agent/users/test_user/sessions/${chatToDelete.sessionId}`);
+      } catch (err) {
+        console.error("세션 삭제 실패:", err);
+      }
+    }
     setChats(chats => {
       const filtered = chats.filter(chat => chat.id !== id);
       // 삭제된 대화가 선택된 상태였다면, 다른 대화로 자동 선택
@@ -189,24 +250,56 @@ function App() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#eee' }}>
-      <ChatSidebar
-        chats={chats}
-        selectedChatId={selectedChatId}
-        onSelectChat={handleSelectChat}
-        onNewChat={handleNewChat}
-        onEditChatTitle={handleEditChatTitle}
-        onDeleteChat={handleDeleteChat}
-      />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <ChatWindow chat={selectedChat} />
-        <ChatInput
-          value={inputValue}
-          onChange={handleInputChange}
-          onSend={() => handleUnifiedInput({ text: inputValue, files: attachedFiles })}
-          onAttachFile={handleAttachFile}
-          attachedFiles={attachedFiles}
-          errorMessage={errorMessage}
+      <div style={{
+        width: 220,
+        minWidth: 200,
+        background: '#222',
+        borderRight: '1px solid #333',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        position: 'sticky',
+        left: 0,
+        top: 0,
+        zIndex: 2,
+      }}>
+        <ChatSidebar
+          chats={chats}
+          selectedChatId={selectedChatId}
+          onSelectChat={handleSelectChat}
+          onNewChat={handleNewChat}
+          onEditChatTitle={handleEditChatTitle}
+          onDeleteChat={handleDeleteChat}
         />
+      </div>
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
+        height: '100vh',
+        position: 'relative',
+      }}>
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <ChatWindow chat={selectedChat} />
+        </div>
+        <div style={{
+          position: 'sticky',
+          bottom: 0,
+          background: '#fafbfc',
+          zIndex: 2,
+          borderTop: '1px solid #eee',
+        }}>
+          <ChatInput
+            value={inputValue}
+            onChange={handleInputChange}
+            onSend={() => handleUnifiedInput({ text: inputValue, files: attachedFiles })}
+            onAttachFile={handleAttachFile}
+            attachedFiles={attachedFiles}
+            errorMessage={errorMessage}
+          />
+          <button onClick={saveLogToFile} style={{ margin: '8px', alignSelf: 'flex-end' }}>로그 저장</button>
+        </div>
       </div>
     </div>
   );

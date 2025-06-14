@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 function ChatWindow({ chat }) {
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [chat?.messages?.length]);
+
   if (!chat) {
     return <div style={{ flex: 1, padding: 32, color: '#888' }}>대화를 선택하세요.</div>;
   }
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', background: '#f7f7f7' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#f7f7f7' }}>
       <div style={{ padding: 24, borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: 20 }}>{chat.title || `대화 ${chat.id}`}</div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: 24 }}>
+      <div
+        ref={messagesEndRef}
+        style={{ flex: 1, overflowY: 'auto', padding: 24, minHeight: 0 }}
+      >
         {chat.messages.length === 0 && <div style={{ color: '#aaa' }}>메시지가 없습니다.</div>}
         {chat.messages.map((msg, idx) => (
           <div key={idx} style={{ marginBottom: 18, display: 'flex', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
@@ -20,7 +32,11 @@ function ChatWindow({ chat }) {
               boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
               wordBreak: 'break-all',
             }}>
-              {msg.text}
+              {msg.role === 'assistant' ? (
+                <ReactMarkdown>{msg.text}</ReactMarkdown>
+              ) : (
+                msg.text
+              )}
               {msg.files && msg.files.length > 0 && (
                 <div style={{ marginTop: 8 }}>
                   {msg.files.map((file, fidx) => (
