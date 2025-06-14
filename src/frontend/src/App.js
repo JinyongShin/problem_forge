@@ -107,7 +107,7 @@ function App() {
 
     // /run 호출을 함수로 분리
     const callRun = async () => {
-      const res = await api.post('/run', requestBody);
+      const res = await api.post('/run_sse', requestBody);
       console.log("[서버 응답]:", res.data);
       if (!Array.isArray(res.data)) {
         setErrorMessage("서버에서 올바른 응답을 받지 못했습니다. (Event 배열 아님)");

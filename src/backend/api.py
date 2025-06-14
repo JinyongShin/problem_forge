@@ -1,6 +1,6 @@
 import requests
 
-API_BASE_URL = "http://127.0.0.1:8000/"
+API_BASE_URL = "http://localhost:8000/"  # server.py로 실행되는 FastAPI 서버 주소
 APP_NAME = "agent"
 USER_ID = "test_user"
 SESSION_ID = "test-session"
@@ -49,7 +49,7 @@ def send_query_sse(payload, streaming=False):
 
 if __name__ == "__main__":
     print(create_session(state={"key1": "value1", "key2": 42}))
-    user_input = "안녕녕."
+    user_input = "안녕."
     print("\n/run_sse (streaming=False) 결과:")
     send_query_sse(session_payload(user_input), streaming=False)
     print("\n/run_sse (streaming=True) 결과:")
