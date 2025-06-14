@@ -6,31 +6,6 @@ import axios from 'axios';
 // uuid 패키지가 필요합니다. (npm install uuid)
 import { v4 as uuidv4 } from 'uuid';
 
-// 로그 버퍼 및 저장 함수 추가
-let logBuffer = [];
-
-function saveLogToFile() {
-  const blob = new Blob([logBuffer.join('\n')], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'frontend_log.txt';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-const origConsoleLog = console.log;
-console.log = function(...args) {
-  logBuffer.push(
-    args.map(arg =>
-      typeof arg === 'object' && arg !== null
-        ? JSON.stringify(arg, null, 2)
-        : String(arg)
-    ).join(' ')
-  );
-  origConsoleLog.apply(console, args);
-};
-
 function App() {
   // 빈 대화로 시작
   const [chats, setChats] = useState([]);
@@ -298,7 +273,6 @@ function App() {
             attachedFiles={attachedFiles}
             errorMessage={errorMessage}
           />
-          <button onClick={saveLogToFile} style={{ margin: '8px', alignSelf: 'flex-end' }}>로그 저장</button>
         </div>
       </div>
     </div>

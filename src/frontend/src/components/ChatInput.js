@@ -1,11 +1,9 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 function ChatInput({ value, onChange, onSend, onAttachFile, attachedFiles = [], errorMessage }) {
-  const [showFileInput, setShowFileInput] = useState(false);
   const fileInputRef = useRef();
 
   const handleFileButtonClick = () => {
-    setShowFileInput(true);
     fileInputRef.current.click();
   };
 
@@ -14,7 +12,6 @@ function ChatInput({ value, onChange, onSend, onAttachFile, attachedFiles = [], 
     if (file) {
       onAttachFile(file);
     }
-    setShowFileInput(false);
     e.target.value = '';
   };
 
