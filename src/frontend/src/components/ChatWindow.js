@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-function ChatWindow({ chat }) {
+function ChatWindow({ chat, logs = [], onSaveLogs }) {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -15,7 +15,22 @@ function ChatWindow({ chat }) {
   }
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: '#f7f7f7' }}>
-      <div style={{ padding: 24, borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: 20 }}>{chat.title || `대화 ${chat.id}`}</div>
+      <div style={{ padding: 24, borderBottom: '1px solid #eee', fontWeight: 'bold', fontSize: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <span>{chat.title || `대화 ${chat.id}`}</span>
+        {onSaveLogs && (
+          <button onClick={onSaveLogs} style={{ marginLeft: 'auto', padding: '6px 16px', fontSize: 14, borderRadius: 6, border: '1px solid #bbb', background: '#fff', cursor: 'pointer' }}>
+            로그 저장
+          </button>
+        )}
+      </div>
+      {/* 로그 뷰어 */}
+      {logs && logs.length > 0 && (
+        <div style={{ background: '#222', color: '#fff', fontSize: 13, maxHeight: 120, overflowY: 'auto', padding: 10, margin: '8px 24px', borderRadius: 6 }}>
+          {logs.slice(-10).map((log, idx) => (
+            <div key={idx} style={{ whiteSpace: 'pre-wrap' }}>{log}</div>
+          ))}
+        </div>
+      )}
       <div
         ref={messagesEndRef}
         style={{ flex: 1, overflowY: 'auto', padding: 24, minHeight: 0 }}

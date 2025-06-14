@@ -5,6 +5,7 @@ import ChatInput from './components/ChatInput';
 import axios from 'axios';
 // uuid 패키지가 필요합니다. (npm install uuid)
 import { v4 as uuidv4 } from 'uuid';
+import { saveAs } from "file-saver";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL;
 const api = axios.create({ baseURL: API_BASE_URL });
@@ -16,6 +17,7 @@ function App() {
   const [inputValue, setInputValue] = useState('');
   const [attachedFiles, setAttachedFiles] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [logs, setLogs] = useState([]);
 
   // 앱 최초 렌더링 시 새 대화 자동 생성 및 선택
   useEffect(() => {
@@ -57,6 +59,8 @@ function App() {
     setAttachedFiles(files => [...files, file]);
     setErrorMessage("");
   };
+
+  const appendLog = (msg) => setLogs(logs => [...logs, `[${new Date().toLocaleString()}] ${msg}`]);
 
   // 입력 통합 핸들러
   const handleUnifiedInput = async ({ text, files }) => {
@@ -103,12 +107,12 @@ function App() {
       },
       streaming: false
     };
-    console.log("[POST /run] request body:", requestBody);
+    appendLog(`요청: ${JSON.stringify(requestBody)}`);
 
     // /run 호출을 함수로 분리
     const callRun = async () => {
       const res = await api.post('/run_sse', requestBody);
-      console.log("[서버 응답]:", res.data);
+      appendLog(`응답: ${JSON.stringify(res.data)}`);
       if (!Array.isArray(res.data)) {
         setErrorMessage("서버에서 올바른 응답을 받지 못했습니다. (Event 배열 아님)");
         console.log("서버 응답:", res.data);
@@ -168,6 +172,7 @@ function App() {
     try {
       await callRun();
     } catch (err) {
+      appendLog(`에러: ${err?.message || err}`);
       if (err.response) {
         console.error("[POST /run] error response:", err.response);
         if (err.response.data) {
@@ -226,6 +231,12 @@ function App() {
     });
   };
 
+  // 로그 저장 핸들러
+  const handleSaveLogs = () => {
+    const blob = new Blob([logs.join('\n')], { type: 'text/plain;charset=utf-8' });
+    saveAs(blob, `chat_logs_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`);
+  };
+
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#eee' }}>
       <div style={{
@@ -259,7 +270,7 @@ function App() {
         position: 'relative',
       }}>
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <ChatWindow chat={selectedChat} />
+          <ChatWindow chat={selectedChat} logs={logs} onSaveLogs={handleSaveLogs} />
         </div>
         <div style={{
           position: 'sticky',
