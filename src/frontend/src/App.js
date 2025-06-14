@@ -6,6 +6,9 @@ import axios from 'axios';
 // uuid 패키지가 필요합니다. (npm install uuid)
 import { v4 as uuidv4 } from 'uuid';
 
+const API_BASE_URL = process.env.REACT_APP_API_URL;
+const api = axios.create({ baseURL: API_BASE_URL });
+
 function App() {
   // 빈 대화로 시작
   const [chats, setChats] = useState([]);
@@ -104,7 +107,7 @@ function App() {
 
     // /run 호출을 함수로 분리
     const callRun = async () => {
-      const res = await axios.post('/run', requestBody);
+      const res = await api.post('/run', requestBody);
       console.log("[서버 응답]:", res.data);
       if (!Array.isArray(res.data)) {
         setErrorMessage("서버에서 올바른 응답을 받지 못했습니다. (Event 배열 아님)");
@@ -176,7 +179,7 @@ function App() {
         if (err.response.data.detail === "Session not found") {
           try {
             console.log("[POST] 세션이 없어 자동 생성 시도");
-            await axios.post(`/apps/${appName}/users/${userId}/sessions/${sessionId}`, {});
+            await api.post(`/apps/${appName}/users/${userId}/sessions/${sessionId}`, {});
             await callRun();
             return;
           } catch (sessionErr) {
@@ -208,7 +211,7 @@ function App() {
     const chatToDelete = chats.find(chat => chat.id === id);
     if (chatToDelete && chatToDelete.sessionId) {
       try {
-        await axios.delete(`/apps/agent/users/test_user/sessions/${chatToDelete.sessionId}`);
+        await api.delete(`/apps/agent/users/test_user/sessions/${chatToDelete.sessionId}`);
       } catch (err) {
         console.error("세션 삭제 실패:", err);
       }
