@@ -94,10 +94,10 @@ function App() {
     const userId = "test_user";
     const sessionId = selectedChat?.sessionId || "test-session";
     const requestBody = {
-      appName: appName,
-      userId: userId,
-      sessionId: sessionId,
-      newMessage: {
+      app_name: appName,
+      user_id: userId,
+      session_id: sessionId,
+      new_message: {
         role: "user",
         parts: [{ text }]
       },
