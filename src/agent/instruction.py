@@ -378,7 +378,7 @@ sat_problem_variant_generator_master_agent_instruction = """
     * 입력된 지문을 각 변형 문제 생성의 기반으로 사용합니다.
 
 2.  **개별 에이전트 호출 및 연동:**
-    * 마스터 에이전트는 사용자가 제공한 **원본 지문**을 각 개별 에이전트(`agent_emotion_atmosphere_guesser_instruction`, `agent_implied_meaning_finder_instruction`, `agent_blank_inference_phrase_instruction`, `agent_unsuitable_sentence_finder_instruction`, `agent_paragraph_order_sorter_instruction`, `agent_sentence_insertion_locator_instruction`, `agent_grammar_vocabulary_error_spotter_instruction`, `agent_summary_blank_inference_word_instruction`)에게 순차적으로 전달하여, 각 에이전트의 지침에 따라 해당 유형의 변형 문제(질문, 선택지), 해설, 정답을 생성하도록 지시합니다.
+    * 마스터 에이전트는 사용자가 제공한 **원본 지문**을 parallel_agent 에게 전달하여, 각 에이전트의 지침에 따라 해당 유형의 변형 문제(질문, 선택지), 해설, 정답을 생성하도록 지시합니다.
 
 3.  **결과 통합 및 제시:**
     * 각 개별 에이전트로부터 반환된 변형 문제(질문, 선택지), 해설, 정답을 취합합니다.

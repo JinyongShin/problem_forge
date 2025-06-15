@@ -1,4 +1,4 @@
-from google.adk.agents import LlmAgent
+from google.adk.agents import LlmAgent, ParallelAgent
 from google.adk.tools import agent_tool
 from agent.instruction import (
     agent_emotion_atmosphere_guesser_instruction,
@@ -78,19 +78,27 @@ summary_blank_inference_word_agent = LlmAgent(
     instruction=agent_summary_blank_inference_word_instruction
 )
 
+parallel_agent = ParallelAgent(
+    name="parallel_agent",
+    description="다양한 변형 문제 생성 에이전트",
+    sub_agents=[
+        emotion_atmosphere_agent,
+        implied_meaning_agent,
+        blank_inference_phrase_agent,
+        unsuitable_sentence_agent,
+        paragraph_order_agent,
+        sentence_insertion_agent,
+        grammar_vocabulary_error_agent,
+    ]
+)
+
 master_agent = LlmAgent(
     name="master_agent",
     model=model,
     description="수능 스타일 영어 지문 또는 문제를 기반으로 다양한 유형의 문제를 생성하는 assistant",
     instruction=sat_problem_variant_generator_master_agent_instruction,
     tools=[
-        agent_tool.AgentTool(emotion_atmosphere_agent),
-        agent_tool.AgentTool(implied_meaning_agent),
-        agent_tool.AgentTool(blank_inference_phrase_agent),
-        agent_tool.AgentTool(unsuitable_sentence_agent),
-        agent_tool.AgentTool(paragraph_order_agent),
-        agent_tool.AgentTool(sentence_insertion_agent),
-        agent_tool.AgentTool(grammar_vocabulary_error_agent),
+        agent_tool.AgentTool(parallel_agent),
     ]
 )
 
@@ -99,9 +107,12 @@ root_agent = LlmAgent(
     model=model,
     description="사용자와 대화하고 수능 기출 지문을 기반으로 다양한 유형의 문제를 생성하는 assistant",
     instruction="""
-사용자와 대화하고 사용자가 문제 변형을 요청하면 마스터 에이전트를 호출하여 문제 변형을 생성합니다.
+사용자가 문제 변형을 요청하면 마스터 에이전트를 호출하여 문제 변형을 생성합니다.
+문제를 변형할 경우 항상 가능한 모든 유형으로 변환합니다.
 문제 변형 관련 요청이 아닌경우 지문이나 기출 문제를 제공하도록 유도합합니다.
 입력된 문제 혹은 지문에 대해 문제를 변형하여 제공하는 요청만 받아들입니다.
+
+**항상** 생성된 모든 변형 문제와 답, 해설을 제공합니다.
 """,
     tools=[
         agent_tool.AgentTool(master_agent),

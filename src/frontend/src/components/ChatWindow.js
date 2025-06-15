@@ -23,7 +23,6 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
           </button>
         )}
       </div>
-      {/* 로그 뷰어 */}
       {logs && logs.length > 0 && (
         <div style={{ background: '#222', color: '#fff', fontSize: 13, maxHeight: 120, overflowY: 'auto', padding: 10, margin: '8px 24px', borderRadius: 6 }}>
           {logs.slice(-10).map((log, idx) => (
@@ -47,10 +46,22 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
               boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
               wordBreak: 'break-all',
             }}>
-              {msg.role === 'assistant' ? (
+              {msg.type === 'loading' ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div className="custom-spinner" style={{ width: 24, height: 24 }} />
+                  <span style={{ fontSize: 16, color: '#222', fontWeight: 500 }}>
+                    {msg.text}
+                  </span>
+                </div>
+              ) : msg.role === 'assistant' ? (
                 <ReactMarkdown>{msg.text}</ReactMarkdown>
               ) : (
-                msg.text
+                msg.text.split('\n').map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))
               )}
               {msg.files && msg.files.length > 0 && (
                 <div style={{ marginTop: 8 }}>
@@ -63,6 +74,21 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
           </div>
         ))}
       </div>
+      <style>{`
+        .custom-spinner {
+          border: 3px solid #e3e8ee;
+          border-top: 3px solid #3498db;
+          border-radius: 50%;
+          width: 24px;
+          height: 24px;
+          animation: spin 1s linear infinite;
+          box-sizing: border-box;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

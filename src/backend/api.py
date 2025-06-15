@@ -1,6 +1,6 @@
 import requests
 
-API_BASE_URL = "http://localhost:8000/"  # server.py로 실행되는 FastAPI 서버 주소
+API_BASE_URL = "http://localhost:4040/"  # server.py로 실행되는 FastAPI 서버 주소
 APP_NAME = "agent"
 USER_ID = "test_user"
 SESSION_ID = "test-session"
