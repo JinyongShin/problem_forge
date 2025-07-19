@@ -45,4 +45,17 @@
 - 파일 확장자, MIME 타입, 용량 등 기본 검증 로직 추가
 - 다양한 입력/예외 상황(빈 입력, 잘못된 파일, 여러 파일 동시 첨부 등) 테스트 완료
 - 모든 입력이 정상적으로 메시지 배열에 저장되고, UI에 잘 표시되는 것 확인
-- dev_history.md에 테스트 및 개선 내역 기록 
+- dev_history.md에 테스트 및 개선 내역 기록
+
+## 9. 클라이언트 사이드 PDF 처리 및 디버깅 기능 추가
+- `pdfjs-dist` 라이브러리를 사용하여 브라우저에서 직접 PDF 파일의 텍스트를 추출하는 기능 추가.
+- 기존 파일 업로드 로직을 변경하여, 파일 자체를 서버로 보내는 대신 추출된 텍스트를 사용자 메시지와 함께 백엔드 `/run` 엔드포인트로 전송.
+- 이를 통해 백엔드 API 변경 없이 PDF 파일 내용을 처리할 수 있게 되어 구조를 단순화함.
+- 디버깅을 위해 `console.log`를 추가하여 PDF 파일 처리 시작, 추출된 텍스트의 길이와 일부 내용을 확인하는 로직 포함.
+
+## 10. PDF.js 워커 파일 로딩 오류 해결 및 로컬 파일 방식 전환
+- PDF 첨부 시 "Failed to fetch dynamically imported module" 오류 발생 → PDF.js 워커 파일 로딩 실패가 원인으로 판명.
+- 기존 CDN 방식(cdnjs.cloudflare.com)에서 발생하는 외부 의존성 문제를 해결하기 위해 로컬 파일 방식으로 전환.
+- `node_modules/pdfjs-dist/build/pdf.worker.min.mjs` 파일을 `public/pdf.worker.min.js`로 복사하여 웹서버에서 정적 파일로 서빙.
+- App.js의 `pdfjsLib.GlobalWorkerOptions.workerSrc` 설정을 `/pdf.worker.min.js` 로컬 경로로 변경.
+- 이를 통해 외부 CDN 의존성 제거, 성능 향상, 보안 강화, 네트워크 환경에 관계없는 안정적 PDF 처리 구현. 
