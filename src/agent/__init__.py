@@ -10,6 +10,7 @@ from agent.instruction import (
     agent_grammar_vocabulary_error_spotter_instruction,
     agent_summary_blank_inference_word_instruction,
     sat_problem_variant_generator_master_agent_instruction,
+    agent_title_generator_instruction,
 )
 
 model = "gemini-2.0-flash"
@@ -117,4 +118,12 @@ root_agent = LlmAgent(
     tools=[
         agent_tool.AgentTool(master_agent),
     ]
+)
+
+# 대화 제목 생성 에이전트
+title_generator_agent = LlmAgent(
+    name="title_generator_agent",
+    model=model,
+    description="사용자의 첫 메시지를 기반으로 대화의 제목을 생성하는 assistant",
+    instruction=agent_title_generator_instruction,
 )

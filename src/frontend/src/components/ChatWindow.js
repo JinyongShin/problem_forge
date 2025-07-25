@@ -1,5 +1,41 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { jsPDF } from 'jspdf';
+import { nanumGothicBase64 } from '../assets/fonts/NanumGothic-base64';
+
+function Accordion({ title, content }) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <div style={{ border: '1px solid #ddd', borderRadius: '8px', marginBottom: '10px', background: '#fff' }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%',
+          background: '#f7f7f7',
+          border: 'none',
+          padding: '12px 18px',
+          textAlign: 'left',
+          cursor: 'pointer',
+          fontSize: '16px',
+          fontWeight: 'bold',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        {title}
+        <span>{isOpen ? '▲' : '▼'}</span>
+      </button>
+      {isOpen && (
+        <div style={{ padding: '15px' }}>
+          <ReactMarkdown>{content}</ReactMarkdown>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function ChatWindow({ chat, logs = [], onSaveLogs }) {
   const messagesEndRef = useRef(null);
@@ -9,6 +45,35 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
     }
   }, [chat?.messages?.length]);
+
+  const handleDownloadPdf = (content) => {
+    const doc = new jsPDF();
+
+    // 폰트 추가
+    doc.addFileToVFS('NanumGothic.ttf', nanumGothicBase64);
+    doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
+    doc.setFont('NanumGothic');
+
+    // 텍스트 줄 바꿈 처리 및 추가
+    const lines = doc.splitTextToSize(content, 180); // 180mm 너비로 자동 줄 바꿈
+    doc.text(lines, 15, 20);
+
+    doc.save('problem-forge-questions.pdf');
+  };
+
+  const parseMultiProblemResponse = (text) => {
+    const separator = "--- 문제";
+    if (!text.includes(separator)) {
+      return null; // 단일 문제 응답으로 처리
+    }
+    const parts = text.split(separator);
+    return parts.slice(1).map(part => {
+      const [title, ...contentParts] = part.split('---');
+      const content = contentParts.join('---').replace(/ 변형 결과 ---\n\n/, '');
+      return { title: `문제 ${title.trim()}`, content: content.trim() };
+    });
+  };
+
 
   if (!chat) {
     return <div style={{ flex: 1, padding: 32, color: '#888' }}>대화를 선택하세요.</div>;
@@ -36,15 +101,15 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
       >
         {chat.messages.length === 0 && <div style={{ color: '#aaa' }}>메시지가 없습니다.</div>}
         {chat.messages.map((msg, idx) => (
-          <div key={idx} style={{ marginBottom: 18, display: 'flex', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+          <div key={idx} style={{ marginBottom: 18, display: 'flex', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-end', gap: 8 }}>
             <div style={{
               background: msg.role === 'user' ? '#d1eaff' : '#fff',
               color: '#222',
               borderRadius: 12,
               padding: '10px 16px',
-              maxWidth: 360,
+              maxWidth: 'calc(100% - 120px)', // 버튼 공간 확보
               boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-              wordBreak: 'break-all',
+              wordBreak: 'break-word',
             }}>
               {msg.type === 'loading' ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -54,7 +119,13 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
                   </span>
                 </div>
               ) : msg.role === 'assistant' ? (
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
+                (() => {
+                  const problems = parseMultiProblemResponse(msg.text);
+                  if (problems) {
+                    return problems.map((p, i) => <Accordion key={i} title={p.title} content={p.content} />);
+                  }
+                  return <ReactMarkdown>{msg.text}</ReactMarkdown>;
+                })()
               ) : (
                 msg.text.split('\n').map((line, i) => (
                   <React.Fragment key={i}>
@@ -71,6 +142,23 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
                 </div>
               )}
             </div>
+            {msg.role === 'assistant' && msg.text && !msg.isLoading && (
+              <button
+                onClick={() => handleDownloadPdf(msg.text)}
+                style={{
+                  padding: '6px 12px',
+                  fontSize: 12,
+                  borderRadius: 6,
+                  border: '1px solid #ccc',
+                  background: '#fff',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+                title="PDF로 다운로드"
+              >
+                PDF 다운로드
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -93,4 +181,5 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
   );
 }
 
-export default ChatWindow; 
+export default ChatWindow;
+ 
