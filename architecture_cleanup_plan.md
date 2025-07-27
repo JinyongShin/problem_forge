@@ -9,7 +9,7 @@
 - **PDF 처리**: 프론트엔드에서 `pdfjs-dist`를 사용하여 클라이언트 사이드 텍스트 추출
 - **문제 분할**: 백엔드 `preprocess.py`의 `split_problems` 함수 사용
 - **에이전트 실행**: 백엔드 `server.py`의 `/agent/run` 엔드포인트
-- **제목 생성**: 백엔드 `title_generator_agent` 사용
+
 
 ### ❌ **데드 코드 현황**
 - `convert_file.py` - PDF 변환 통합 인터페이스 (미사용)

@@ -99,11 +99,18 @@ function App() {
   const analyzeInputAndShowSelection = async () => {
     if (!inputValue.trim() && attachedFiles.length === 0) return;
     
-    let textToProcess = inputValue;
-    if (attachedFiles.length > 0) {
+    // 사용자 경험 개선: 전송 버튼 클릭 즉시 입력 필드 클리어
+    const textToProcess = inputValue;
+    const filesToProcess = [...attachedFiles];
+    setInputValue(''); // 즉시 입력창 클리어
+    setAttachedFiles([]); // 즉시 첨부파일 클리어
+    setErrorMessage(""); // 기존 에러 메시지 클리어
+    
+    let fullTextToProcess = textToProcess;
+    if (filesToProcess.length > 0) {
       try {
-        const extractedText = await extractTextFromPdf(attachedFiles[0]);
-        textToProcess += `\n\n${extractedText}`;
+        const extractedText = await extractTextFromPdf(filesToProcess[0]);
+        fullTextToProcess += `\n\n${extractedText}`;
       } catch (error) {
         setErrorMessage(error);
         return;
@@ -111,18 +118,20 @@ function App() {
     }
 
     try {
-      const res = await api.post('/api/split-problems', { text: textToProcess });
+      const res = await api.post('/api/split-problems', { text: fullTextToProcess });
       const problems = res.data.problems || [];
       if (problems.length > 1) {
         setSelectableProblems(problems);
         setSelectedProblems(new Set());
-        setInputValue('');
-        setAttachedFiles([]);
+        // 입력 필드는 이미 위에서 클리어됨
       } else {
-        await processSingleProblem(textToProcess);
+        await processSingleProblem(fullTextToProcess);
       }
     } catch (err) {
       setErrorMessage("문제 분할 중 오류가 발생했습니다.");
+      // 에러 발생 시 입력 내용 복원 (사용자 편의)
+      setInputValue(textToProcess);
+      setAttachedFiles(filesToProcess);
     }
   };
 
@@ -168,6 +177,8 @@ function App() {
       appendLog(`에이전트 호출 시작 - 사용자: ${userId}, 세션: ${sessionId}`);
       appendLog(`요청 내용: ${text.substring(0, 100)}...`);
       
+      // 서버 로그 스트림 제거 (이전 커밋 방식으로 복원)
+      
       // 1단계: 세션 생성 (ADK 문서에 따른 필수 단계)
       try {
         await api.post(`/apps/${appName}/users/${userId}/sessions/${sessionId}`, {
@@ -183,30 +194,102 @@ function App() {
         }
       }
       
-      // 2단계: 에이전트 실행 (ADK 표준 방식)
+      // 2단계: 에이전트 실행 (ADK SSE 스트리밍 방식)
       const requestBody = {
-        appName: appName,  // ADK 문서에 따른 파라미터명
+        appName: appName,
         userId: userId,
         sessionId: sessionId,
+        streaming: true, // 스트리밍 활성화
         newMessage: {
           role: "user",
           parts: [{ text }]
         }
       };
       
-      const res = await api.post('/run', requestBody);
-      appendLog(`에이전트 응답 수신 완료`);
+      return new Promise((resolve, reject) => {
+        const eventSource = new EventSource(
+          `${API_BASE_URL}/run_sse`,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        // POST 요청을 위해 fetch 사용 (EventSource는 GET만 지원)
+        fetch(`${API_BASE_URL}/run_sse`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'text/event-stream'
+          },
+          body: JSON.stringify(requestBody)
+        }).then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
+          let finalResult = null;
+          
+          const readStream = () => {
+            reader.read().then(({ done, value }) => {
+              if (done) {
+                appendLog(`스트리밍 완료`);
+                resolve(finalResult || "결과를 받지 못했습니다.");
+                return;
+              }
+              
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop(); // 마지막 불완전한 줄 보관
+              
+              lines.forEach(line => {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6); // 'data: ' 제거
+                  if (data.trim() === '[DONE]') {
+                    return;
+                  }
+                  
+                  try {
+                    const parsed = JSON.parse(data);
+                    
+                    // ★ 모든 원본 데이터를 로깅 (이전 커밋 방식 복원)
+                    appendLog(`[RAW] ${data}`);
+                    
+                    // 최종 결과 처리
+                    if (parsed.content?.role === "model") {
+                      const resultText = parsed.content?.parts?.[0]?.text;
+                      if (resultText) {
+                        finalResult = resultText;
+                        appendLog(`에이전트 응답 수신: ${resultText.substring(0, 100)}...`);
+                      }
+                    }
+                  } catch (parseError) {
+                    // JSON 파싱 실패 시 원본 데이터를 로그로 표시
+                    if (data.trim() && data !== '[DONE]') {
+                      appendLog(`[서버] ${data}`);
+                    }
+                  }
+                }
+              });
+              
+              readStream();
+            }).catch(error => {
+              appendLog(`스트리밍 읽기 오류: ${error.message}`);
+              reject(error);
+            });
+          };
+          
+          readStream();
+        }).catch(error => {
+          appendLog(`에이전트 호출 실패: ${error.message}`);
+          reject(error);
+        });
+      });
       
-      const lastModelEvent = [...res.data].reverse().find(ev => ev.content?.role === "model");
-      const resultText = lastModelEvent?.content?.parts?.[0]?.text || null;
-      
-      if (resultText) {
-        appendLog(`에이전트 응답 성공: ${resultText.substring(0, 100)}...`);
-      } else {
-        appendLog(`에이전트 응답이 비어있습니다.`);
-      }
-      
-      return resultText;
     } catch (err) {
       console.error("Agent call failed:", err);
       appendLog(`에이전트 호출 실패: ${err.response?.status || 'Unknown'} - ${err.message}`);
@@ -267,6 +350,8 @@ function App() {
     const blob = new Blob([logs.join('\n')], { type: 'text/plain;charset=utf-8' });
     saveAs(blob, `chat_logs_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`);
   };
+
+  // 서버 로그 스트림 함수 제거 (이전 커밋 방식으로 복원)
 
   const handleLogin = async (id, pw) => {
     try {

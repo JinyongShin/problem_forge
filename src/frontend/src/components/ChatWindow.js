@@ -1,7 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { jsPDF } from 'jspdf';
-import { nanumGothicBase64 } from '../assets/fonts/NanumGothic-base64';
 
 function Accordion({ title, content }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -47,18 +45,107 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
   }, [chat?.messages?.length]);
 
   const handleDownloadPdf = (content) => {
-    const doc = new jsPDF();
-
-    // 폰트 추가
-    doc.addFileToVFS('NanumGothic.ttf', nanumGothicBase64);
-    doc.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
-    doc.setFont('NanumGothic');
-
-    // 텍스트 줄 바꿈 처리 및 추가
-    const lines = doc.splitTextToSize(content, 180); // 180mm 너비로 자동 줄 바꿈
-    doc.text(lines, 15, 20);
-
-    doc.save('problem-forge-questions.pdf');
+    // 브라우저의 인쇄 기능을 기본으로 사용 (한글 지원)
+    const printWindow = window.open('', '_blank');
+    
+    // 마크다운 제거 및 텍스트 정리
+    const processKoreanText = (text) => {
+      return text
+        .replace(/#{1,6}\s/g, '') // 헤더 제거
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // bold를 HTML로 변환
+        .replace(/\*(.*?)\*/g, '<em>$1</em>') // italic을 HTML로 변환
+        .replace(/`(.*?)`/g, '<code>$1</code>') // code를 HTML로 변환
+        .replace(/\n{3,}/g, '\n\n') // 과도한 줄바꿈 정리
+        .replace(/\n\n/g, '</p><p>') // 단락 구분
+        .replace(/\n/g, '<br>') // 줄바꿈을 HTML로 변환
+        .trim();
+    };
+    
+    const cleanContent = processKoreanText(content);
+    const currentDate = new Date().toLocaleDateString('ko-KR');
+    
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Problem Forge - Generated Questions</title>
+          <meta charset="UTF-8">
+          <style>
+            @page {
+              margin: 2cm;
+              size: A4;
+            }
+            body { 
+              font-family: 'Malgun Gothic', '맑은 고딕', 'Nanum Gothic', '나눔고딕', Arial, sans-serif; 
+              padding: 0;
+              margin: 0;
+              line-height: 1.6; 
+              color: #333;
+              font-size: 12pt;
+            }
+            .header {
+              border-bottom: 2px solid #ddd; 
+              padding-bottom: 15px; 
+              margin-bottom: 25px;
+            }
+            h1 { 
+              color: #2c3e50; 
+              font-size: 18pt;
+              margin: 0 0 10px 0;
+              font-weight: bold;
+            }
+            .date {
+              font-size: 10pt;
+              color: #666;
+              margin: 5px 0;
+            }
+            .content { 
+              white-space: pre-wrap;
+              font-size: 12pt;
+              line-height: 1.7;
+            }
+            .content p {
+              margin: 10px 0;
+            }
+            .content strong {
+              font-weight: bold;
+              color: #2c3e50;
+            }
+            .content em {
+              font-style: italic;
+              color: #34495e;
+            }
+            .content code {
+              background-color: #f8f9fa;
+              padding: 2px 4px;
+              border-radius: 3px;
+              font-family: 'Consolas', 'Monaco', monospace;
+              font-size: 11pt;
+            }
+            @media print {
+              body { print-color-adjust: exact; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Problem Forge - AI Generated Questions</h1>
+            <div class="date"><strong>Generated on:</strong> ${currentDate}</div>
+          </div>
+          <div class="content">
+            <p>${cleanContent}</p>
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+              }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const parseMultiProblemResponse = (text) => {
@@ -149,12 +236,13 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
                   padding: '6px 12px',
                   fontSize: 12,
                   borderRadius: 6,
-                  border: '1px solid #ccc',
-                  background: '#fff',
+                  border: '1px solid #4CAF50',
+                  background: '#4CAF50',
+                  color: 'white',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
                 }}
-                title="PDF로 다운로드"
+                title="PDF로 다운로드 (한글 완벽 지원)"
               >
                 PDF 다운로드
               </button>

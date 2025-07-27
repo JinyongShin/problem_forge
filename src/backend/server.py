@@ -7,7 +7,11 @@ FastAPI 기반 백엔드 서버로 AI 에이전트를 통한 문제 변형 생�
 import os
 import sys
 import logging
+import asyncio
+import json
 from typing import Dict, Any, List, Optional
+from queue import Queue
+import threading
 # from datetime import datetime  # 제거 - 더 이상 사용하지 않음
 
 # Path configuration
@@ -19,20 +23,51 @@ if SRC_DIR not in sys.path:
 
 from google.adk.cli.fast_api import get_fast_api_app
 from fastapi import Request, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from backend.preprocess import split_problems
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part
-from agent import title_generator_agent
+
 
 # Import main agent for /run endpoint - ADK가 자동으로 처리하므로 불필요
 # from agent import root_agent as main_agent
 
 # Constants
 USERS_FILE = "users.txt"
-TITLE_GENERATOR_APP_NAME = "title_generator"
 API_USER_ID = "api_user"
 CORS_ORIGINS = ["*"]
+
+# 로그 캡처를 위한 전역 큐
+log_queues = {}  # session_id -> Queue 매핑
+
+class SSELogHandler(logging.Handler):
+    """SSE 로그 전달을 위한 커스텀 핸들러"""
+    
+    def __init__(self):
+        super().__init__()
+        self.setLevel(logging.INFO)
+        
+    def emit(self, record):
+        try:
+            log_entry = self.format(record)
+            # 모든 활성 세션에 로그 전달
+            for session_id, queue in log_queues.items():
+                try:
+                    # 큐가 가득 차면 오래된 로그 제거
+                    if queue.qsize() > 100:
+                        try:
+                            queue.get_nowait()
+                        except:
+                            pass
+                    queue.put_nowait({
+                        'type': 'server_log',
+                        'message': log_entry,
+                        'timestamp': record.created
+                    })
+                except:
+                    pass  # 큐에 넣기 실패해도 계속 진행
+        except:
+            pass  # 로깅 핸들러에서 에러가 발생해도 메인 프로그램에 영향 주지 않음
 
 # Logging configuration
 logging.basicConfig(
@@ -40,6 +75,27 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# 커스텀 로그 핸들러 추가
+sse_handler = SSELogHandler()
+sse_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+
+# 모든 로거에 SSE 핸들러 추가
+root_logger = logging.getLogger()
+root_logger.addHandler(sse_handler)
+
+# ADK 관련 로거들에도 핸들러 추가
+adk_loggers = [
+    'google.adk',
+    'google_adk',
+    'google.adk.cli.fast_api',
+    'google.adk.models.google_llm'
+]
+
+for logger_name in adk_loggers:
+    adk_logger = logging.getLogger(logger_name)
+    adk_logger.addHandler(sse_handler)
+    adk_logger.setLevel(logging.INFO)
 
 # FastAPI app initialization
 app = get_fast_api_app(
@@ -89,65 +145,7 @@ def check_login(user_id: str, password: str) -> bool:
     return False
 
 
-async def run_title_generator(text: str) -> str:
-    """
-    제목 생성 에이전트 실행
-    
-    Args:
-        text (str): 제목을 생성할 텍스트
-        
-    Returns:
-        str: 생성된 제목
-        
-    Raises:
-        HTTPException: 에이전트 실행 실패 시
-    """
-    runner = InMemoryRunner(
-        app_name=TITLE_GENERATOR_APP_NAME,
-        agent=title_generator_agent,
-    )
-    
-    try:
-        # 세션 생성
-        session = await runner.session_service.create_session(
-            app_name=TITLE_GENERATOR_APP_NAME,
-            user_id=API_USER_ID,
-        )
-        
-        # 사용자 메시지 생성
-        user_message = Content(
-            role="user",
-            parts=[Part.from_text(text=text)]
-        )
-        
-        # 에이전트 실행
-        events = list(runner.run(
-            user_id=API_USER_ID,
-            session_id=session.id,
-            new_message=user_message,
-        ))
-        
-        # 응답 텍스트 추출
-        response_text = ""
-        for event in events:
-            if hasattr(event, 'content') and event.content:
-                for part in event.content.parts:
-                    if hasattr(part, 'text'):
-                        response_text += part.text
-        
-        if not response_text.strip():
-            logger.warning("Title generator returned empty response")
-            return "새 대화"  # 기본 제목
-            
-        logger.info(f"Title generated successfully: {response_text[:50]}...")
-        return response_text.strip()
-        
-    except Exception as e:
-        logger.error(f"Title generation failed: {e}")
-        raise HTTPException(
-            status_code=500, 
-            detail=f"Title generation error: {str(e)}"
-        )
+
 
 
 @app.post('/api/login')
@@ -224,39 +222,74 @@ async def split_problems_endpoint(request: Request) -> JSONResponse:
         )
 
 
-@app.post("/api/generate-title")
-async def generate_title_endpoint(request: Request) -> JSONResponse:
+
+
+
+@app.get("/api/logs/{session_id}")
+async def get_logs_stream(session_id: str):
     """
-    대화 제목 생성 API
+    실시간 서버 로그 스트리밍 엔드포인트
     
     Args:
-        request: 제목 생성할 텍스트 요청
+        session_id (str): 세션 ID
         
     Returns:
-        JSONResponse: 생성된 제목
+        StreamingResponse: SSE 형태의 로그 스트림
     """
-    try:
-        data = await request.json()
-        text = data.get("text")
+    async def log_stream():
+        # 세션용 로그 큐 생성
+        if session_id not in log_queues:
+            log_queues[session_id] = Queue()
         
-        if not text or not text.strip():
-            raise HTTPException(
-                status_code=400, 
-                detail="제목을 생성할 텍스트를 입력해주세요."
-            )
+        queue = log_queues[session_id]
         
-        title = await run_title_generator(text)
-        return JSONResponse(content={"title": title})
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Title generation endpoint error: {e}")
-        raise HTTPException(
-            status_code=500, 
-            detail=f"제목 생성 중 오류가 발생했습니다: {str(e)}"
-        )
-
+        try:
+            # 초기 연결 확인 메시지
+            yield f"data: {json.dumps({'type': 'connection', 'message': 'Server log stream connected'})}\n\n"
+            
+            while True:
+                try:
+                    # 큐에서 로그 가져오기 (논블로킹)
+                    logs_to_send = []
+                    
+                    # 최대 10개의 로그를 한 번에 가져오기
+                    for _ in range(10):
+                        try:
+                            log_item = queue.get_nowait()
+                            logs_to_send.append(log_item)
+                        except:
+                            break  # 큐가 비어있으면 중단
+                    
+                    # 로그가 있으면 전송
+                    for log_item in logs_to_send:
+                        yield f"data: {json.dumps(log_item)}\n\n"
+                    
+                    # 짧은 대기 후 다시 확인
+                    await asyncio.sleep(0.1)
+                    
+                except Exception as e:
+                    logger.error(f"Log streaming error: {e}")
+                    break
+                    
+        except Exception as e:
+            logger.error(f"Log stream connection error: {e}")
+        finally:
+            # 연결 종료 시 큐 정리
+            if session_id in log_queues:
+                del log_queues[session_id]
+            yield f"data: {json.dumps({'type': 'disconnect', 'message': 'Server log stream disconnected'})}\n\n"
+    
+    return StreamingResponse(
+        log_stream(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
 
 
 if __name__ == "__main__":

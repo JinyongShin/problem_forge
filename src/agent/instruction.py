@@ -349,7 +349,7 @@ agent_summary_blank_inference_word_instruction = """## 에이전트 Instruction:
 1.  **해설 (Explanation):**
     * 요약문의 내용과 지문의 핵심 주제를 연결하여 빈칸 (A)와 (B)에 들어갈 단어가 왜 정답인지를 상세하게 설명합니다.
     * 오답 선택지의 단어들이 왜 적절하지 않은지, 어떤 점에서 지문의 내용과 벗어나는지 설명합니다.
-2.  **정답 (Answer):
+2.  **정답 (Answer):**
     * 해당 문제의 정답(올바른 단어 쌍의 번호)을 명확하게 명시합니다. (예: `정답: ③ (단절 – 적응)`)
 
 ### **결과 제공 형식 **
@@ -546,26 +546,4 @@ sat_problem_variant_generator_master_agent_instruction = """
 
 **정답:**
 [정답 번호 또는 내용]
-"""
-
-agent_title_generator_instruction = """## 에이전트 Instruction: 대화 제목 생성기
-
-### **목표**
-사용자가 입력한 첫 번째 메시지(주로 영어 문제 지문)의 핵심 내용을 파악하여, 대화 전체를 대표할 수 있는 간결하고 명확한 제목을 한국어로 생성합니다.
-
-### **기본 원칙**
-1.  **핵심 키워드 추출:** 입력된 텍스트에서 주제, 주요 인물, 핵심 사건 등을 나타내는 키워드를 1~3개 추출합니다.
-2.  **간결한 제목 생성:** 추출된 키워드를 조합하여 5단어 이내의 짧은 제목을 만듭니다.
-3.  **한국어 출력:** 최종 결과물은 반드시 한국어로 생성합니다.
-4.  **따옴표 제거:** 결과물에 따옴표나 다른 특수 문자를 포함하지 않습니다.
-
-### **예시**
-- **입력:** "Dear Hylean Miller, Hello, I’m Nelson Perkins, a teacher and swimming coach... we need one more swimming pool for them."
-- **출력:** 수영장 추가 대여 문의
-
-- **입력:** "The phone rang late at night, and Sam sat up with a jolt. It felt to him as though his life was going to change..."
-- **출력:** Sam의 심야 전화
-
-- **입력:** "Spring is in bloom and the park wears a new green coat. There are the tennis courts, a garden, and a small hill..."
-- **출력:** 봄날 공원의 풍경
 """

@@ -45,15 +45,7 @@ def test_split_problems_no_delimiter(client):
     assert len(data["problems"]) == 1
     assert data["problems"][0] == text
 
-def test_generate_title_endpoint(client):
-    """유효한 응답을 위한 /api/generate-title 엔드포인트를 테스트합니다."""
-    # 엔드포인트가 올바르게 응답하는지 확인하는 고수준 테스트입니다.
-    # 제목의 품질은 검증하지 않고, API 계약만 확인합니다.
-    response = client.post("/api/generate-title", json={"text": "수영장에 관한 긴 단락."})
-    assert response.status_code == 200
-    data = response.json()
-    assert "title" in data
-    assert isinstance(data["title"], str)
+
 
 # /run 엔드포인트 테스트는 비동기 특성과 AgentSession 의존성으로 인해 더 복잡합니다.
 # 완전한 통합 테스트가 필요하지만, 지금은 다른 엔드포인트들이 작동하는지 확인합니다.
