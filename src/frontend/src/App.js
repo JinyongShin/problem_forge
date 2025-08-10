@@ -20,11 +20,58 @@ const extractTextFromPdf = async (file) => {
       try {
         const pdf = await pdfjsLib.getDocument({ data: event.target.result }).promise;
         let textContent = '';
+        console.log(`[PDF 추출] 총 페이지 수: ${pdf.numPages}`);
+        
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const text = await page.getTextContent();
-          textContent += text.items.map(item => item.str).join(' ') + '\n';
+          
+          // 텍스트 아이템들을 위치 정보를 고려하여 줄바꿈 처리
+          let lastY = null;
+          let pageLines = [];
+          let currentLine = [];
+          
+          text.items.forEach(item => {
+            // Y 좌표가 변경되면 새로운 줄로 인식
+            if (lastY !== null && Math.abs(lastY - item.transform[5]) > 2) {
+              if (currentLine.length > 0) {
+                pageLines.push(currentLine.join(' '));
+                currentLine = [];
+              }
+            }
+            currentLine.push(item.str);
+            lastY = item.transform[5];
+          });
+          
+          // 마지막 줄 추가
+          if (currentLine.length > 0) {
+            pageLines.push(currentLine.join(' '));
+          }
+          
+          const pageText = pageLines.join('\n') + '\n';
+          textContent += pageText;
+          
+          // 각 페이지의 처음 200자 로깅
+          console.log(`[PDF 추출] 페이지 ${i} 미리보기:`, pageText.substring(0, 200));
+          if (i === 1) {
+            console.log(`[PDF 추출] 페이지 1의 줄바꿈 개수:`, pageText.split('\n').length - 1);
+          }
         }
+        
+        // 전체 추출된 텍스트 정보
+        console.log(`[PDF 추출 완료] 전체 텍스트 길이: ${textContent.length}자`);
+        console.log(`[PDF 추출] "Part Ⅲ 테스트편" 포함 여부:`, textContent.includes("Part Ⅲ 테스트편"));
+        console.log(`[PDF 추출] "정답과 해설" 포함 여부:`, textContent.includes("정답과 해설"));
+        
+        // 문항 코드 패턴 찾기
+        const codePattern = /\d{5}-\d{4}/g;
+        const codes = textContent.match(codePattern);
+        if (codes) {
+          console.log(`[PDF 추출] 발견된 문항 코드:`, codes.slice(0, 10)); // 처음 10개만
+        } else {
+          console.log(`[PDF 추출] 문항 코드를 찾을 수 없음`);
+        }
+        
         resolve(textContent);
       } catch (error) {
         reject("PDF 파일 처리 중 오류가 발생했습니다.");
@@ -207,15 +254,6 @@ function App() {
       };
       
       return new Promise((resolve, reject) => {
-        const eventSource = new EventSource(
-          `${API_BASE_URL}/run_sse`,
-          {
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        
         // POST 요청을 위해 fetch 사용 (EventSource는 GET만 지원)
         fetch(`${API_BASE_URL}/run_sse`, {
           method: 'POST',
@@ -260,11 +298,26 @@ function App() {
                     appendLog(`[RAW] ${data}`);
                     
                     // 최종 결과 처리
+                    // functionResponse 처리를 먼저 확인 (에이전트가 생성한 실제 내용)
+                    if (parsed.content?.role === "user") {
+                      const functionResponse = parsed.content?.parts?.[0]?.functionResponse;
+                      if (functionResponse?.response?.result) {
+                        finalResult = functionResponse.response.result;
+                        appendLog(`에이전트 변형 문제 수신: ${functionResponse.response.result.substring(0, 100)}...`);
+                      }
+                    }
+                    
+                    // text 응답 처리 (functionResponse가 없거나 더 긴 경우에만 사용)
                     if (parsed.content?.role === "model") {
                       const resultText = parsed.content?.parts?.[0]?.text;
                       if (resultText) {
-                        finalResult = resultText;
-                        appendLog(`에이전트 응답 수신: ${resultText.substring(0, 100)}...`);
+                        // functionResponse가 이미 있고 text가 더 짧으면 덮어쓰지 않음
+                        if (!finalResult || resultText.length > finalResult.length) {
+                          finalResult = resultText;
+                          appendLog(`에이전트 응답 수신: ${resultText.substring(0, 100)}...`);
+                        } else {
+                          appendLog(`추가 메시지 수신: ${resultText.substring(0, 100)}...`);
+                        }
                       }
                     }
                   } catch (parseError) {

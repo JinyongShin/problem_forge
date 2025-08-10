@@ -207,8 +207,34 @@ async def split_problems_endpoint(request: Request) -> JSONResponse:
                 detail="분할할 텍스트를 입력해주세요."
             )
         
+        # 디버깅: 받은 텍스트 정보 로깅
+        logger.info(f"[백엔드] 받은 텍스트 길이: {len(text)}자")
+        logger.info(f"[백엔드] 'Part Ⅲ 테스트편' 포함: {'Part Ⅲ 테스트편' in text}")
+        logger.info(f"[백엔드] '정답과 해설' 포함: {'정답과 해설' in text}")
+        
+        # 문항 코드 찾기
+        import re
+        codes = re.findall(r'\d{5}-\d{4}', text)
+        if codes:
+            logger.info(f"[백엔드] 발견된 문항 코드: {codes[:10]}")  # 처음 10개
+        else:
+            logger.info(f"[백엔드] 문항 코드를 찾을 수 없음")
+        
+        logger.info(f"[백엔드] 텍스트 처음 500자: {text[:500]}")
+        
         problems = split_problems(text)
         logger.info(f"Problems split successfully: {len(problems)} problems found")
+        
+        # 문제 타입 통계 (re는 이미 import됨)
+        exercise_count = sum(1 for p in problems if p.startswith('Exercises'))
+        code_count = sum(1 for p in problems if re.match(r'^\d{5}-\d{4}', p))
+        other_count = len(problems) - exercise_count - code_count
+        
+        logger.info(f"[백엔드] 문제 타입: 문항코드 {code_count}개, Exercises {exercise_count}개, 기타 {other_count}개")
+        
+        # 첫 번째 문제 미리보기
+        if problems:
+            logger.info(f"[백엔드] 첫 번째 문제 미리보기 (200자): {problems[0][:200]}")
         
         return JSONResponse(content={"problems": problems})
         
