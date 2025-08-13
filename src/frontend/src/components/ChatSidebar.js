@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat, onEditChatTitle, onDeleteChat }) {
+function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat, onEditChatTitle, onDeleteChat, onLogout, userId }) {
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [menuOpenId, setMenuOpenId] = useState(null);
@@ -125,6 +125,30 @@ function ChatSidebar({ chats, selectedChatId, onSelectChat, onNewChat, onEditCha
             )}
           </div>
         ))}
+      </div>
+      {/* 로그아웃 영역 */}
+      <div style={{ borderTop: '1px solid #333', padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: 14, color: '#aaa' }}>로그인: {userId}</span>
+        </div>
+        <button
+          onClick={onLogout}
+          style={{
+            width: '100%',
+            padding: 8,
+            background: '#666',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 4,
+            cursor: 'pointer',
+            fontSize: 14,
+            transition: 'background 0.2s'
+          }}
+          onMouseEnter={e => e.target.style.background = '#777'}
+          onMouseLeave={e => e.target.style.background = '#666'}
+        >
+          로그아웃
+        </button>
       </div>
     </div>
   );

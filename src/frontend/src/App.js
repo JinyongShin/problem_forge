@@ -104,6 +104,81 @@ function App() {
     }
   }, [chats.length, isLoggedIn]);
 
+  // 브라우저 종료 시 세션 정리
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (isLoggedIn && chats.length > 0) {
+        // sendBeacon을 사용한 안전한 세션 정리
+        chats
+          .filter(chat => chat.sessionId)
+          .forEach(chat => {
+            const sessionUrl = `${API_BASE_URL}/apps/agent/users/${userId}/sessions/${chat.sessionId}`;
+            
+            // sendBeacon으로 DELETE 요청 (브라우저 종료 시에도 전송 보장)
+            if (navigator.sendBeacon) {
+              // sendBeacon은 POST만 지원하므로 서버에서 처리할 특별한 엔드포인트가 필요
+              // 대신 동기적 fetch 사용
+              try {
+                fetch(sessionUrl, {
+                  method: 'DELETE',
+                  keepalive: true, // 브라우저 종료 시에도 요청 유지
+                  headers: {
+                    'Content-Type': 'application/json'
+                  }
+                });
+              } catch (err) {
+                console.warn(`세션 삭제 실패 (${chat.sessionId}):`, err);
+              }
+            } else {
+              // sendBeacon 미지원 시 동기적 XMLHttpRequest 사용
+              try {
+                const xhr = new XMLHttpRequest();
+                xhr.open('DELETE', sessionUrl, false); // 동기적 요청
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send();
+              } catch (err) {
+                console.warn(`세션 삭제 실패 (${chat.sessionId}):`, err);
+              }
+            }
+          });
+      }
+    };
+
+    // 페이지 가시성 변경 시에도 세션 정리 (모바일 브라우저 대응)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && isLoggedIn && chats.length > 0) {
+        // 백그라운드로 전환 시 세션 정리
+        chats
+          .filter(chat => chat.sessionId)
+          .forEach(chat => {
+            const sessionUrl = `${API_BASE_URL}/apps/agent/users/${userId}/sessions/${chat.sessionId}`;
+            
+            if (navigator.sendBeacon) {
+              fetch(sessionUrl, {
+                method: 'DELETE',
+                keepalive: true,
+                headers: {
+                  'Content-Type': 'application/json'
+                }
+              }).catch(err => 
+                console.warn(`세션 삭제 실패 (${chat.sessionId}):`, err)
+              );
+            }
+          });
+      }
+    };
+
+    if (isLoggedIn) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isLoggedIn, chats, userId]);
+
   const selectedChat = chats.find(c => c.id === selectedChatId);
 
   const resetInputs = () => {
@@ -421,6 +496,39 @@ function App() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      // 로그아웃 전 모든 활성 세션 정리
+      const cleanupPromises = chats
+        .filter(chat => chat.sessionId)
+        .map(chat => 
+          api.delete(`/apps/agent/users/${userId}/sessions/${chat.sessionId}`)
+            .catch(err => console.warn(`세션 삭제 실패 (${chat.sessionId}):`, err))
+        );
+      
+      // 모든 세션 정리 완료 대기
+      await Promise.allSettled(cleanupPromises);
+      
+      // 상태 초기화
+      setIsLoggedIn(false);
+      setUserId("");
+      setChats([]);
+      setSelectedChatId(null);
+      resetInputs();
+      setLogs([]);
+      
+    } catch (err) {
+      console.error("로그아웃 중 오류:", err);
+      // 오류가 있어도 로그아웃은 진행
+      setIsLoggedIn(false);
+      setUserId("");
+      setChats([]);
+      setSelectedChatId(null);
+      resetInputs();
+      setLogs([]);
+    }
+  };
+
 
   if (!isLoggedIn) {
     return <Login onLogin={handleLogin} errorMessage={loginError} />;
@@ -435,6 +543,8 @@ function App() {
         onNewChat={handleNewChat}
         onEditChatTitle={handleEditChatTitle}
         onDeleteChat={handleDeleteChat}
+        onLogout={handleLogout}
+        userId={userId}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100vh', position: 'relative' }}>
         <ChatWindow
