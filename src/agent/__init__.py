@@ -89,6 +89,7 @@ parallel_agent = ParallelAgent(
         paragraph_order_agent,
         sentence_insertion_agent,
         grammar_vocabulary_error_agent,
+        summary_blank_inference_word_agent,
     ]
 )
 
