@@ -1,0 +1,779 @@
+[2025. 8. 13. 오후 10:49:34] 📡 서버 로그 스트림에 연결 중...
+[2025. 8. 13. 오후 10:49:34] ✅ 서버 로그 스트림 연결 완료
+[2025. 8. 13. 오후 10:49:34] 📡 Server log stream connected
+[2025. 8. 13. 오후 10:49:39] PDF 파싱 시작 - 파일명: test_small.pdf, 총 페이지 수: 4
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 1 텍스트 추출 시작...
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 2 텍스트 추출 시작...
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 3 텍스트 추출 시작...
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 4 텍스트 추출 시작...
+[2025. 8. 13. 오후 10:49:39] 🚀 4개 페이지 병렬 처리 시작...
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 4 텍스트 추출 완료 (1043자) - 에이전트 호출...
+[2025. 8. 13. 오후 10:49:39] 페이지 4: PDF 파싱 에이전트 세션 생성 시작
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 2 텍스트 추출 완료 (920자) - 에이전트 호출...
+[2025. 8. 13. 오후 10:49:39] 페이지 2: PDF 파싱 에이전트 세션 생성 시작
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 1 텍스트 추출 완료 (833자) - 에이전트 호출...
+[2025. 8. 13. 오후 10:49:39] 페이지 1: PDF 파싱 에이전트 세션 생성 시작
+[2025. 8. 13. 오후 10:49:39] 📄 페이지 3 텍스트 추출 완료 (917자) - 에이전트 호출...
+[2025. 8. 13. 오후 10:49:39] 페이지 3: PDF 파싱 에이전트 세션 생성 시작
+[2025. 8. 13. 오후 10:49:39] 페이지 2: PDF 파싱 세션 생성 완료 [pdf-parsing-2-1755092979797]
+[2025. 8. 13. 오후 10:49:39] 페이지 2: PDF 파싱 에이전트에 텍스트 전송 (920자)
+[2025. 8. 13. 오후 10:49:39] 📝 전송 텍스트 전체 내용:
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] Part
+ Dear Mr. Carter,
+ Thank you for the interest you have shown in the FC Rainbow City 50 Year
+ Anniversary products. The reason I’m writing this email is to provide you with
+ an update on your recent order. We regret to inform you that due to
+ unprecedented levels of demand in an extremely short space of time we’re unable
+ to fulfil your order for the FC Rainbow City 50 Year Anniversary Shirt 2XL. We
+ are processing a refund for your original purchase. You will receive a refund
+ back to the original form of payment within 2   –   7 business days. If you have any
+ further questions, please feel free to write to me and I will be happy to assist you.
+ We always appreciate your support and love as a loyal FC Rainbow City fan.
+ Once again, we apologize for this inconvenience.
+ Sincerely,
+ Chad Adams
+ FC Rainbow City Online Store Manager
+ unprecedented:
+ 50
+ 23005-0003
+ 13
+ 책1.indb   13   2023. 1. 6.   15:54
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] 페이지 4: PDF 파싱 세션 생성 완료 [pdf-parsing-4-1755092979797]
+[2025. 8. 13. 오후 10:49:39] 페이지 4: PDF 파싱 에이전트에 텍스트 전송 (1043자)
+[2025. 8. 13. 오후 10:49:39] 📝 전송 텍스트 전체 내용:
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] Part
+ Dear Mr. White,
+ I feel sincerely honored and privileged that you have invited me to be the guest
+ speaker at the upcoming regional conference of the Personnel Management
+ Association. I am fully aware that this will be a prestigious event, considering that
+ you have invited a few senators to this gathering.
+ Regrettably, as much as I would like to speak at the conference, I will not be able to
+ do so because I will be out of the country on that day due to a family event.
+ With that, I would like to suggest Ms. Julia Spencer to take my place as guest
+ speaker. Ms. Spencer has been working in the field of human resources for 30 years,
+ she is an expert in human and social organization, and she has done many speaking
+ engagements throughout her career. Please let me know if you decide to invite her as
+ my alternate so that I can give her advanced notice.
+ Once again, thank you for your invitation. I hope your event is a great success.
+ Sincerely,
+ Chris Kershaw
+ senator:
+ 23005-0005
+ 15
+ 책1.indb   15   2023. 1. 6.   15:54
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] 페이지 1: PDF 파싱 세션 생성 완료 [pdf-parsing-1-1755092979799]
+[2025. 8. 13. 오후 10:49:39] 페이지 1: PDF 파싱 에이전트에 텍스트 전송 (833자)
+[2025. 8. 13. 오후 10:49:39] 📝 전송 텍스트 전체 내용:
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] E xercises
+ Dear Blue Light Theater,
+ Every year the Modern Art Association holds an awards night to honor accomplished
+ artists in our state. For this year’s program, we are featuring new and progressive artistic
+ groups like yours.
+ In a matter of one year, your vocal group has become well known for its unique
+ style and fantastic range. We will be honored if you help us celebrate this year’s
+ accomplishments in modern art by performing two selections for us on the evening of
+ October 6.
+ If you accept our invitation, your travel and lodging expenses will be entirely covered.
+ We must finalize our schedule by August 18, so we would appreciate it if you could let
+ us know as early as possible if you are able to accept our invitation.
+ Best regards,
+ Christian Rickerts
+ 23005-0002
+ 12
+ 책1.indb   12   2023. 1. 6.   15:54
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] 페이지 3: PDF 파싱 세션 생성 완료 [pdf-parsing-3-1755092979799]
+[2025. 8. 13. 오후 10:49:39] 페이지 3: PDF 파싱 에이전트에 텍스트 전송 (917자)
+[2025. 8. 13. 오후 10:49:39] 📝 전송 텍스트 전체 내용:
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] E xercises
+ Dear Mr. Perkins,
+ Thank you for sending your work samples and discussing your views about the
+ editor’s position we have opened. I have reviewed your work and reflected at length
+ on our last conversation, particularly your hesitancy to demonstrate your editorial
+ approach to analytical topics. Since we talked I have interviewed several other
+ candidates with substantial editorial credentials and have become convinced that
+ analytical skills and technical knowledge are an important prerequisite for the job. My
+ conclusion is that your background is not appropriate for the position and, frankly,
+ that you would not enjoy the job during a necessary period of training. I regret that we
+ must make this decision. Again, thank you for your interest in the job.
+ With best regards,
+ Shella Collins
+ Personnel Director
+ credentials:   prerequisite:
+ 23005-0004
+ 14
+ 책1.indb   14   2023. 1. 6.   15:54
+[2025. 8. 13. 오후 10:49:39] --------------------------------------------------
+[2025. 8. 13. 오후 10:49:39] 페이지 2 PDF 파싱 에이전트 스트리밍 완료
+[2025. 8. 13. 오후 10:49:39] 진행률: 1/4 페이지 완료
+[2025. 8. 13. 오후 10:49:39] 페이지 4 PDF 파싱 에이전트 스트리밍 완료
+[2025. 8. 13. 오후 10:49:39] 진행률: 2/4 페이지 완료
+[2025. 8. 13. 오후 10:49:39] 페이지 1 PDF 파싱 에이전트 스트리밍 완료
+[2025. 8. 13. 오후 10:49:39] 진행률: 3/4 페이지 완료
+[2025. 8. 13. 오후 10:49:39] 페이지 3 PDF 파싱 에이전트 스트리밍 완료
+[2025. 8. 13. 오후 10:49:39] 진행률: 4/4 페이지 완료
+[2025. 8. 13. 오후 10:49:39] ⚪ 페이지 1: 영어문제 없음
+[2025. 8. 13. 오후 10:49:39] ⚪ 페이지 2: 영어문제 없음
+[2025. 8. 13. 오후 10:49:39] ⚪ 페이지 3: 영어문제 없음
+[2025. 8. 13. 오후 10:49:39] ⚪ 페이지 4: 영어문제 없음
+[2025. 8. 13. 오후 10:49:39] 🎉 PDF 파싱 완료! 성공: 4, 실패: 0, 총 0개 영어문제 추출
+[2025. 8. 13. 오후 10:49:39] 📝 텍스트에서 3개 문제를 발견했습니다. 변환할 문제를 선택해주세요.
+[서버] 2025-08-13 22:49:39,815 - /Users/alphabridge/Documents/Git/problem_forge/.venv/lib/python3.11/site-packages/google/adk/cli/utils/envs.py - INFO - Loaded .env file for pdf_agent at /Users/alphabridge/Documents/Git/problem_forge/.env
+[서버] 2025-08-13 22:49:39,816 - /Users/alphabridge/Documents/Git/problem_forge/.venv/lib/python3.11/site-packages/google/adk/cli/utils/envs.py - INFO - Loaded .env file for pdf_agent at /Users/alphabridge/Documents/Git/problem_forge/.env
+[서버] 2025-08-13 22:49:39,820 - google_genai._api_client - WARNING - Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[서버] 2025-08-13 22:49:39,860 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,860 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,860 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"Part\n Dear Mr. Carter,\n Thank you for the interest you have shown in the FC Rainbow City 50 Year\n Anniversary products. The reason I’m writing this email is to provide you with\n an update on your recent order. We regret to inform you that due to\n unprecedented levels of demand in an extremely short space of time we’re unable\n to fulfil your order for the FC Rainbow City 50 Year Anniversary Shirt 2XL. We\n are processing a refund for your original purchase. You will receive a refund\n back to the original form of payment within 2   –   7 business days. If you have any\n further questions, please feel free to write to me and I will be happy to assist you.\n We always appreciate your support and love as a loyal FC Rainbow City fan.\n Once again, we apologize for this inconvenience.\n Sincerely,\n Chad Adams\n FC Rainbow City Online Store Manager\n unprecedented:\n 50\n 23005-0003\n 13\n 책1.indb   13   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,860 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"Part\n Dear Mr. Carter,\n Thank you for the interest you have shown in the FC Rainbow City 50 Year\n Anniversary products. The reason I’m writing this email is to provide you with\n an update on your recent order. We regret to inform you that due to\n unprecedented levels of demand in an extremely short space of time we’re unable\n to fulfil your order for the FC Rainbow City 50 Year Anniversary Shirt 2XL. We\n are processing a refund for your original purchase. You will receive a refund\n back to the original form of payment within 2   –   7 business days. If you have any\n further questions, please feel free to write to me and I will be happy to assist you.\n We always appreciate your support and love as a loyal FC Rainbow City fan.\n Once again, we apologize for this inconvenience.\n Sincerely,\n Chad Adams\n FC Rainbow City Online Store Manager\n unprecedented:\n 50\n 23005-0003\n 13\n 책1.indb   13   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,860 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+[서버] 2025-08-13 22:49:39,862 - /Users/alphabridge/Documents/Git/problem_forge/.venv/lib/python3.11/site-packages/google/adk/cli/utils/envs.py - INFO - Loaded .env file for pdf_agent at /Users/alphabridge/Documents/Git/problem_forge/.env
+[서버] 2025-08-13 22:49:39,863 - google_genai._api_client - WARNING - Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[서버] 2025-08-13 22:49:39,877 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,877 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,877 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"Part\n Dear Mr. White,\n I feel sincerely honored and privileged that you have invited me to be the guest\n speaker at the upcoming regional conference of the Personnel Management\n Association. I am fully aware that this will be a prestigious event, considering that\n you have invited a few senators to this gathering.\n Regrettably, as much as I would like to speak at the conference, I will not be able to\n do so because I will be out of the country on that day due to a family event.\n With that, I would like to suggest Ms. Julia Spencer to take my place as guest\n speaker. Ms. Spencer has been working in the field of human resources for 30 years,\n she is an expert in human and social organization, and she has done many speaking\n engagements throughout her career. Please let me know if you decide to invite her as\n my alternate so that I can give her advanced notice.\n Once again, thank you for your invitation. I hope your event is a great success.\n Sincerely,\n Chris Kershaw\n senator:\n 23005-0005\n 15\n 책1.indb   15   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,877 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"Part\n Dear Mr. White,\n I feel sincerely honored and privileged that you have invited me to be the guest\n speaker at the upcoming regional conference of the Personnel Management\n Association. I am fully aware that this will be a prestigious event, considering that\n you have invited a few senators to this gathering.\n Regrettably, as much as I would like to speak at the conference, I will not be able to\n do so because I will be out of the country on that day due to a family event.\n With that, I would like to suggest Ms. Julia Spencer to take my place as guest\n speaker. Ms. Spencer has been working in the field of human resources for 30 years,\n she is an expert in human and social organization, and she has done many speaking\n engagements throughout her career. Please let me know if you decide to invite her as\n my alternate so that I can give her advanced notice.\n Once again, thank you for your invitation. I hope your event is a great success.\n Sincerely,\n Chris Kershaw\n senator:\n 23005-0005\n 15\n 책1.indb   15   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,877 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+[서버] 2025-08-13 22:49:39,878 - /Users/alphabridge/Documents/Git/problem_forge/.venv/lib/python3.11/site-packages/google/adk/cli/utils/envs.py - INFO - Loaded .env file for pdf_agent at /Users/alphabridge/Documents/Git/problem_forge/.env
+[서버] 2025-08-13 22:49:39,878 - google_genai._api_client - WARNING - Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[서버] 2025-08-13 22:49:39,892 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,892 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,892 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"E xercises\n Dear Blue Light Theater,\n Every year the Modern Art Association holds an awards night to honor accomplished\n artists in our state. For this year’s program, we are featuring new and progressive artistic\n groups like yours.\n In a matter of one year, your vocal group has become well known for its unique\n style and fantastic range. We will be honored if you help us celebrate this year’s\n accomplishments in modern art by performing two selections for us on the evening of\n October 6.\n If you accept our invitation, your travel and lodging expenses will be entirely covered.\n We must finalize our schedule by August 18, so we would appreciate it if you could let\n us know as early as possible if you are able to accept our invitation.\n Best regards,\n Christian Rickerts\n 23005-0002\n 12\n 책1.indb   12   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,892 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"E xercises\n Dear Blue Light Theater,\n Every year the Modern Art Association holds an awards night to honor accomplished\n artists in our state. For this year’s program, we are featuring new and progressive artistic\n groups like yours.\n In a matter of one year, your vocal group has become well known for its unique\n style and fantastic range. We will be honored if you help us celebrate this year’s\n accomplishments in modern art by performing two selections for us on the evening of\n October 6.\n If you accept our invitation, your travel and lodging expenses will be entirely covered.\n We must finalize our schedule by August 18, so we would appreciate it if you could let\n us know as early as possible if you are able to accept our invitation.\n Best regards,\n Christian Rickerts\n 23005-0002\n 12\n 책1.indb   12   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,892 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.
+[서버] 2025-08-13 22:49:39,893 - /Users/alphabridge/Documents/Git/problem_forge/.venv/lib/python3.11/site-packages/google/adk/cli/utils/envs.py - INFO - Loaded .env file for pdf_agent at /Users/alphabridge/Documents/Git/problem_forge/.env
+[서버] 2025-08-13 22:49:39,893 - google_genai._api_client - WARNING - Both GOOGLE_API_KEY and GEMINI_API_KEY are set. Using GOOGLE_API_KEY.
+[서버] 2025-08-13 22:49:39,906 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,906 - google_adk.google.adk.models.google_llm - INFO - Sending out request, model: gemini-2.0-flash, backend: GoogleLLMVariant.GEMINI_API, stream: True
+[서버] 2025-08-13 22:49:39,906 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"E xercises\n Dear Mr. Perkins,\n Thank you for sending your work samples and discussing your views about the\n editor’s position we have opened. I have reviewed your work and reflected at length\n on our last conversation, particularly your hesitancy to demonstrate your editorial\n approach to analytical topics. Since we talked I have interviewed several other\n candidates with substantial editorial credentials and have become convinced that\n analytical skills and technical knowledge are an important prerequisite for the job. My\n conclusion is that your background is not appropriate for the position and, frankly,\n that you would not enjoy the job during a necessary period of training. I regret that we\n must make this decision. Again, thank you for your interest in the job.\n With best regards,\n Shella Collins\n Personnel Director\n credentials:   prerequisite:\n 23005-0004\n 14\n 책1.indb   14   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,906 - google_adk.google.adk.models.google_llm - INFO - 
+LLM Request:
+-----------------------------------------------------------
+System Instruction:
+## 에이전트 Instruction: 영어 문제 추출기
+
+### **목표**
+
+PDF에서 페이지 단위로 추출된 텍스트에서 **영어 문제만** 식별하고 추출합니다.
+
+### **기본 원칙**
+
+1. **페이지 단위 분석**: 입력받은 단일 페이지 텍스트를 분석하여 영어 문제 존재 여부를 확인합니다.
+2. **영어 문제 식별 기준**:
+   * 영어 지문이 포함된 문제 (영어 문장, 단어가 일정 비율 이상)
+   * 객관식 선택지 (①, ②, ③, ④, ⑤ 또는 1., 2., 3., 4., 5.)
+3. **완전한 문제 추출**: 문제-지문-선택지가 모두 포함된 완전한 문제만 추출합니다.
+4. **품질 검증**: 불완전하거나 영어 문제가 아닌 경우 제외합니다.
+
+### **처리 절차**
+
+1. **텍스트 전처리**: 입력 텍스트에서 노이즈 제거 (페이지 번호, 헤더/푸터 등)
+2. **영어 문제 패턴 검색**: 
+   - 문항 코드 패턴: `\d{5}-\d{4}`
+   - Exercises 패턴: `^Exercises`
+   - 영어 텍스트 비율 확인
+3. **문제 완성도 검증**:
+   - 문제 지시문 존재
+   - 영어 지문 존재 (최소 50자 이상)
+   - 객관식 선택지 존재 (최소 3개 이상)
+4. **결과 반환**: 완전한 영어 문제만 구조화된 형태로 반환
+
+### **출력 형식**
+
+**반드시 JSON 형태로만 응답하세요. 다른 설명이나 텍스트는 포함하지 마세요.**
+
+페이지에서 영어 문제가 발견된 경우:
+```json
+{
+    "has_english_problem": true,
+    "problems": [
+        {
+            "problem_id": "23005-0001",
+            "problem_type": "문항코드",
+            "full_text": "전체 문제 텍스트(문제, 지문, 선택지 모두 포함)"
+        }
+    ]
+}
+```
+
+페이지에서 영어 문제가 발견되지 않은 경우:
+```json
+{
+    "has_english_problem": false,
+    "reason": "영어 문제 없음",
+    "problems": []
+}
+```
+
+**중요**: 위 JSON 형식 외에는 어떤 텍스트도 출력하지 마세요.
+
+### **예외 처리**
+
+- 문제가 여러 페이지에 걸쳐 있는 경우: 현재 페이지의 텍스트만으로 판단
+- 영어와 한국어가 혼재된 경우: 영어 비율이 30% 이상인 경우만 영어 문제로 분류
+- 불완전한 문제: completeness_score가 0.7 미만인 경우 제외
+
+
+You are an agent. Your internal name is "pdf_parser_root".
+
+ The description about you is "PDF에서 영어 문제를 추출하고 분석하는 루트 에이전트"
+-----------------------------------------------------------
+Contents:
+{"parts":[{"text":"E xercises\n Dear Mr. Perkins,\n Thank you for sending your work samples and discussing your views about the\n editor’s position we have opened. I have reviewed your work and reflected at length\n on our last conversation, particularly your hesitancy to demonstrate your editorial\n approach to analytical topics. Since we talked I have interviewed several other\n candidates with substantial editorial credentials and have become convinced that\n analytical skills and technical knowledge are an important prerequisite for the job. My\n conclusion is that your background is not appropriate for the position and, frankly,\n that you would not enjoy the job during a necessary period of training. I regret that we\n must make this decision. Again, thank you for your interest in the job.\n With best regards,\n Shella Collins\n Personnel Director\n credentials:   prerequisite:\n 23005-0004\n 14\n 책1.indb   14   2023. 1. 6.   15:54"}],"role":"user"}
+-----------------------------------------------------------
+Functions:
+
+-----------------------------------------------------------
+
+[서버] 2025-08-13 22:49:39,906 - google_genai.models - INFO - AFC is enabled with max remote calls: 10.

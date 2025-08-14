@@ -82,6 +82,370 @@ const extractTextFromPdf = async (file) => {
   });
 };
 
+// 📄 NEW: PDF에서 페이지별로 영어 문제 추출 (병렬 처리)
+const extractEnglishProblemsFromPdf = async (file, appendLog, updateProgress) => {
+  const reader = new FileReader();
+  return new Promise((resolve, reject) => {
+    reader.onload = async (event) => {
+      try {
+        const pdf = await pdfjsLib.getDocument({ data: event.target.result }).promise;
+        const totalPages = pdf.numPages;
+        let completedPages = 0;
+        
+        appendLog(`PDF 파싱 시작 - 파일명: ${file.name}, 총 페이지 수: ${totalPages}`);
+        console.log(`[영어문제 추출] 총 페이지 수: ${totalPages}`);
+        
+        // 📊 진행률 업데이트 함수
+        const updatePageProgress = () => {
+          completedPages += 1;
+          updateProgress(completedPages, totalPages);
+          appendLog(`진행률: ${completedPages}/${totalPages} 페이지 완료`);
+        };
+        
+        // 🚀 병렬 처리: 모든 페이지를 동시에 처리
+        const pagePromises = [];
+        for (let i = 1; i <= totalPages; i++) {
+          const pagePromise = processPageParallel(pdf, i, appendLog, updatePageProgress);
+          pagePromises.push(pagePromise);
+        }
+        
+        // Promise.allSettled를 사용하여 모든 페이지 처리 완료 대기
+        appendLog(`🚀 ${totalPages}개 페이지 병렬 처리 시작...`);
+        const pageResults = await Promise.allSettled(pagePromises);
+        
+        // 결과 수집
+        const allProblems = [];
+        let successCount = 0;
+        let failureCount = 0;
+        
+        pageResults.forEach((result, index) => {
+          const pageNumber = index + 1;
+          if (result.status === 'fulfilled') {
+            successCount++;
+            const pageResult = result.value;
+            if (pageResult.problems && pageResult.problems.length > 0) {
+              pageResult.problems.forEach(problem => {
+                problem.source_page = pageNumber;
+                allProblems.push(problem);
+              });
+              appendLog(`✅ 페이지 ${pageNumber}: ${pageResult.problems.length}개 영어문제 발견`);
+            } else {
+              appendLog(`⚪ 페이지 ${pageNumber}: 영어문제 없음`);
+            }
+          } else {
+            failureCount++;
+            appendLog(`❌ 페이지 ${pageNumber} 처리 실패: ${result.reason}`);
+            console.error(`[영어문제 추출] 페이지 ${pageNumber} 실패:`, result.reason);
+          }
+        });
+        
+        appendLog(`🎉 PDF 파싱 완료! 성공: ${successCount}, 실패: ${failureCount}, 총 ${allProblems.length}개 영어문제 추출`);
+        console.log(`[영어문제 추출 완료] 총 ${allProblems.length}개 영어 문제 발견`);
+        
+        // 페이지 순서대로 정렬 (source_page 기준)
+        allProblems.sort((a, b) => a.source_page - b.source_page);
+        
+        resolve(allProblems);
+      } catch (error) {
+        appendLog(`❌ PDF 파싱 실패: ${error.message}`);
+        console.error("[영어문제 추출] PDF 처리 오류:", error);
+        reject("PDF 파일 처리 중 오류가 발생했습니다.");
+      }
+    };
+    reader.onerror = () => {
+      appendLog("❌ 파일 읽기 실패");
+      reject("파일을 읽는 중 오류가 발생했습니다.");
+    };
+    reader.readAsArrayBuffer(file);
+  });
+};
+
+// 🔄 개별 페이지 처리 함수 (병렬 처리용)
+const processPageParallel = async (pdf, pageNumber, appendLog, updatePageProgress) => {
+  try {
+    appendLog(`📄 페이지 ${pageNumber} 텍스트 추출 시작...`);
+    
+    const page = await pdf.getPage(pageNumber);
+    const text = await page.getTextContent();
+    
+    // 텍스트 아이템들을 위치 정보를 고려하여 줄바꿈 처리
+    let lastY = null;
+    let pageLines = [];
+    let currentLine = [];
+    
+    text.items.forEach(item => {
+      if (lastY !== null && Math.abs(lastY - item.transform[5]) > 2) {
+        if (currentLine.length > 0) {
+          pageLines.push(currentLine.join(' '));
+          currentLine = [];
+        }
+      }
+      currentLine.push(item.str);
+      lastY = item.transform[5];
+    });
+    
+    if (currentLine.length > 0) {
+      pageLines.push(currentLine.join(' '));
+    }
+    
+    const pageText = pageLines.join('\n');
+    appendLog(`📄 페이지 ${pageNumber} 텍스트 추출 완료 (${pageText.length}자) - 에이전트 호출...`);
+    
+    // PDF 파싱 에이전트 호출
+    const result = await callPdfParsingAgent(pageText, pageNumber, appendLog);
+    
+    // 진행률 업데이트
+    updatePageProgress();
+    
+    return result;
+  } catch (error) {
+    // 진행률 업데이트 (실패해도 완료된 것으로 간주)
+    updatePageProgress();
+    throw new Error(`페이지 ${pageNumber} 처리 실패: ${error.message}`);
+  }
+};
+
+// 📝 프론트엔드 문제 분리 함수 (백엔드 split_problems 이식)
+const splitProblemsOnClient = (text) => {
+  if (!text || !text.trim()) {
+    return [];
+  }
+
+  // 문항 코드 패턴과 Exercises 패턴 사용
+  const pattern = /(?=\d{5}-\d{4})|(?=Exercises\s*\n)/gm;
+  const rawProblems = text.split(pattern);
+  
+  const problemDict = {};
+  const problemOrder = [];
+  let exerciseCounter = 0;
+  
+  for (let rawProblem of rawProblems) {
+    rawProblem = rawProblem.trim();
+    if (!rawProblem) continue;
+      
+    // 문항 코드 추출
+    const codeMatch = rawProblem.match(/^(\d{5}-\d{4})/);
+    const exercisesMatch = rawProblem.match(/^Exercises/);
+    
+    if (codeMatch) {
+      const code = codeMatch[1];
+      if (!problemDict[code] || rawProblem.length > problemDict[code].length) {
+        problemDict[code] = rawProblem;
+        if (!problemOrder.includes(code)) {
+          problemOrder.push(code);
+        }
+      }
+    } else if (exercisesMatch) {
+      exerciseCounter += 1;
+      const code = `EXERCISE_${exerciseCounter.toString().padStart(3, '0')}`;
+      problemDict[code] = rawProblem;
+      problemOrder.push(code);
+    }
+  }
+  
+  // 실제 문제만 필터링 (충분한 내용이 있는 것)
+  const cleanedProblems = [];
+  const problemKeywords = ['다음', '아래', 'Dear', '밑줄', '빈칸', '글의', '주어진'];
+  
+  for (let code of problemOrder) {
+    const problem = problemDict[code];
+    
+    // 최소 200자 이상이고 문제 키워드가 포함된 경우만 실제 문제로 간주
+    if (problem.length > 200 && 
+        problemKeywords.some(keyword => problem.substring(0, 300).includes(keyword))) {
+      cleanedProblems.push(problem);
+    }
+  }
+  
+  return cleanedProblems;
+};
+
+// 📡 PDF 파싱 에이전트 호출 (별도 앱으로 마운트된 pdf_agent 호출)
+const callPdfParsingAgent = async (pageText, pageNumber, appendLog) => {
+  const appName = "pdf_agent";
+  const sessionId = `pdf-parsing-${pageNumber}-${Date.now()}`; // 페이지별 고유 세션
+  
+  try {
+    appendLog(`페이지 ${pageNumber}: PDF 파싱 에이전트 세션 생성 시작`);
+    
+    // 1단계: PDF 앱에서 세션 생성 (/pdf 경로 사용)
+    try {
+      await api.post(`/pdf/apps/${appName}/users/pdf_parser/sessions/${sessionId}`, {
+        state: { pageNumber: pageNumber }
+      });
+      appendLog(`페이지 ${pageNumber}: PDF 파싱 세션 생성 완료 [${sessionId}]`);
+    } catch (sessionError) {
+      if (sessionError.response?.status !== 409) {
+        appendLog(`페이지 ${pageNumber}: PDF 파싱 세션 생성 실패 - ${sessionError.message}`);
+      } else {
+        appendLog(`페이지 ${pageNumber}: 기존 PDF 파싱 세션 재사용 [${sessionId}]`);
+      }
+    }
+    
+    // 2단계: PDF 파싱 에이전트 실행 (/pdf/run_sse 사용)
+    const requestBody = {
+      appName: appName,
+      userId: "pdf_parser", 
+      sessionId: sessionId,
+      streaming: true,
+      newMessage: {
+        role: "user",
+        parts: [{ text: pageText }]
+      }
+    };
+    
+    // 전송되는 텍스트 내용을 콘솔과 로그에 출력
+    console.log(`[PDF 텍스트 전송] 페이지 ${pageNumber}:`, {
+      길이: `${pageText.length}자`,
+      내용: pageText.substring(0, 200) + (pageText.length > 200 ? '...' : ''),
+      전체내용: pageText  // 디버깅용으로 전체 내용도 콘솔에 출력
+    });
+    
+    appendLog(`페이지 ${pageNumber}: PDF 파싱 에이전트에 텍스트 전송 (${pageText.length}자)`);
+    appendLog(`📝 전송 텍스트 전체 내용:`);
+    appendLog("-".repeat(50));
+    appendLog(pageText);
+    appendLog("-".repeat(50));
+    
+    return new Promise((resolve, reject) => {
+      // 🚀 PDF 앱의 run_sse 엔드포인트 사용
+      fetch(`${API_BASE_URL}/pdf/run_sse`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream'
+        },
+        body: JSON.stringify(requestBody)
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let finalResult = null;
+        
+        const readStream = () => {
+          reader.read().then(({ done, value }) => {
+            if (done) {
+              appendLog(`페이지 ${pageNumber} PDF 파싱 에이전트 스트리밍 완료`);
+              
+              // 최종 결과가 없으면 기본 응답 반환
+              if (!finalResult) {
+                resolve({
+                  has_english_problem: false,
+                  reason: "에이전트 응답 없음",
+                  problems: [],
+                  page_number: pageNumber
+                });
+              } else {
+                try {
+                  let parsedResult;
+                  
+                  // 더 안전한 JSON 파싱
+                  if (typeof finalResult === 'string') {
+                    // JSON 문자열을 정리하고 파싱
+                    const cleanedResult = finalResult.trim();
+                    if (cleanedResult.startsWith('{') && cleanedResult.endsWith('}')) {
+                      parsedResult = JSON.parse(cleanedResult);
+                    } else {
+                      throw new Error('응답이 유효한 JSON 형식이 아닙니다');
+                    }
+                  } else if (typeof finalResult === 'object' && finalResult !== null) {
+                    parsedResult = finalResult;
+                  } else {
+                    throw new Error('응답이 객체 형태가 아닙니다');
+                  }
+                  
+                  // 필수 필드 검증
+                  if (typeof parsedResult.has_english_problem === 'undefined') {
+                    throw new Error('has_english_problem 필드가 없습니다');
+                  }
+                  
+                  parsedResult.page_number = pageNumber;
+                  appendLog(`페이지 ${pageNumber} JSON 파싱 성공: ${parsedResult.has_english_problem ? '영어문제 발견' : '영어문제 없음'}`);
+                  resolve(parsedResult);
+                } catch (parseError) {
+                  appendLog(`페이지 ${pageNumber} JSON 파싱 실패: ${parseError.message}`);
+                  appendLog(`페이지 ${pageNumber} 원본 응답: ${JSON.stringify(finalResult).substring(0, 200)}...`);
+                  resolve({
+                    has_english_problem: false,
+                    reason: "응답 파싱 실패",
+                    problems: [],
+                    page_number: pageNumber,
+                    raw_response: finalResult
+                  });
+                }
+              }
+              return;
+            }
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // 마지막 불완전한 줄 보관
+            
+            lines.forEach(line => {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6); // 'data: ' 제거
+                if (data.trim() === '[DONE]') {
+                  return;
+                }
+                
+                try {
+                  const parsed = JSON.parse(data);
+                  
+                  // ★ 기존과 동일하게 모든 원본 데이터를 [RAW] 로그로 표시
+                  appendLog(`[RAW] ${data}`);
+                  
+                  // 최종 결과 처리 (기존 로직과 동일)
+                  if (parsed.content?.role === "user") {
+                    const functionResponse = parsed.content?.parts?.[0]?.functionResponse;
+                    if (functionResponse?.response?.result) {
+                      finalResult = functionResponse.response.result;
+                      appendLog(`페이지 ${pageNumber} PDF 파싱 에이전트 결과 수신: ${JSON.stringify(functionResponse.response.result).substring(0, 200)}...`);
+                    }
+                  }
+                  
+                  if (parsed.content?.role === "model") {
+                    const resultText = parsed.content?.parts?.[0]?.text;
+                    if (resultText) {
+                      if (!finalResult || resultText.length > (finalResult?.length || 0)) {
+                        finalResult = resultText;
+                        appendLog(`페이지 ${pageNumber} PDF 파싱 에이전트 응답: ${resultText.substring(0, 200)}...`);
+                      }
+                    }
+                  }
+                } catch (parseError) {
+                  // JSON 파싱 실패 시 원본 데이터를 로그로 표시
+                  if (data.trim() && data !== '[DONE]') {
+                    appendLog(`[서버] ${data}`);
+                  }
+                }
+              }
+            });
+            
+            readStream();
+          }).catch(error => {
+            appendLog(`페이지 ${pageNumber} PDF 파싱 스트리밍 읽기 오류: ${error.message}`);
+            reject(error);
+          });
+        };
+        
+        readStream();
+      }).catch(error => {
+        appendLog(`페이지 ${pageNumber} PDF 파싱 에이전트 호출 실패: ${error.message}`);
+        reject(error);
+      });
+    });
+    
+  } catch (err) {
+    console.error("PDF parsing agent call failed:", err);
+    appendLog(`페이지 ${pageNumber} PDF 파싱 에이전트 호출 실패: ${err.response?.status || 'Unknown'} - ${err.message}`);
+    throw err;
+  }
+};
+
 function App() {
   const [chats, setChats] = useState([]);
   const [selectedChatId, setSelectedChatId] = useState(null);
@@ -94,6 +458,28 @@ function App() {
   const [userId, setUserId] = useState("");
   const [selectableProblems, setSelectableProblems] = useState([]);
   const [selectedProblems, setSelectedProblems] = useState(new Set());
+  const [pdfProgressMessage, setPdfProgressMessage] = useState(null);
+
+  // 로그 추가 함수 (useEffect에서 사용되므로 먼저 정의)
+  const appendLog = (msg) => setLogs(logs => [...logs, `[${new Date().toLocaleString()}] ${msg}`]);
+  
+  // PDF 진행률 업데이트 함수 (채팅 메시지로 표시)
+  const updateProgress = (current, total) => {
+    const progressPercentage = Math.round((current / total) * 100);
+    const progressMessage = {
+      role: 'assistant',
+      content: `📄 PDF 파싱 진행 중... ${current}/${total} 페이지 (${progressPercentage}% 완료)`,
+      timestamp: new Date().toISOString(),
+      isProgress: true
+    };
+    
+    setPdfProgressMessage(progressMessage);
+    
+    // 완료 시 진행률 메시지 제거
+    if (current >= total) {
+      setTimeout(() => setPdfProgressMessage(null), 1000);
+    }
+  };
 
   useEffect(() => {
     if (isLoggedIn && chats.length === 0) {
@@ -103,6 +489,55 @@ function App() {
       setSelectedChatId(1);
     }
   }, [chats.length, isLoggedIn]);
+
+  // 서버 로그 스트림 연결 (root 계정만)
+  useEffect(() => {
+    let eventSource = null;
+    
+    // selectedChat를 useEffect 내에서 직접 계산
+    const currentSelectedChat = chats.find(c => c.id === selectedChatId);
+    
+    if (isLoggedIn && userId === "root" && currentSelectedChat?.sessionId) {
+      appendLog("📡 서버 로그 스트림에 연결 중...");
+      
+      // EventSource를 사용해 서버 로그 스트림에 연결
+      eventSource = new EventSource(`${API_BASE_URL}/api/logs/${currentSelectedChat.sessionId}`);
+      
+      eventSource.onopen = () => {
+        appendLog("✅ 서버 로그 스트림 연결 완료");
+      };
+      
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'server_log') {
+            // 서버 로그를 클라이언트 로그에 추가 (중복 타임스탬프 방지)
+            setLogs(logs => [...logs, `[서버] ${data.message}`]);
+          } else if (data.type === 'connection') {
+            appendLog(`📡 ${data.message}`);
+          } else if (data.type === 'disconnect') {
+            appendLog(`📡 ${data.message}`);
+          }
+        } catch (e) {
+          // JSON 파싱 실패 시 원본 데이터 표시
+          console.warn('Server log parsing failed:', e);
+        }
+      };
+      
+      eventSource.onerror = (error) => {
+        appendLog("❌ 서버 로그 스트림 연결 오류");
+        console.error('Server log stream error:', error);
+      };
+    }
+    
+    // 컴포넌트 언마운트나 세션 변경 시 연결 해제
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+        appendLog("📡 서버 로그 스트림 연결 해제");
+      }
+    };
+  }, [isLoggedIn, userId, selectedChatId, chats]);
 
   // 브라우저 종료 시 세션 정리
   useEffect(() => {
@@ -231,26 +666,63 @@ function App() {
     let fullTextToProcess = textToProcess;
     if (filesToProcess.length > 0) {
       try {
-        const extractedText = await extractTextFromPdf(filesToProcess[0]);
-        fullTextToProcess += `\n\n${extractedText}`;
+        // 📄 NEW: PDF 파일을 페이지별로 처리
+        const extractedProblems = await extractEnglishProblemsFromPdf(filesToProcess[0], appendLog, updateProgress);
+        if (extractedProblems.length > 0) {
+          // 영어 문제가 발견된 경우 - 채팅창에 결과 메시지 추가
+          const problemTexts = extractedProblems.map(problem => problem.full_text || problem.question || "문제 텍스트가 없습니다");
+          
+          // 채팅창에 PDF 파싱 결과 메시지 추가
+          const resultMessage = {
+            role: 'assistant',
+            content: `🎉 PDF에서 총 ${extractedProblems.length}개의 영어 문제를 찾았습니다!\n\n${extractedProblems.map((problem, idx) => `**문제 ${idx + 1} (페이지 ${problem.source_page})**\n${problem.problem_id || 'ID 없음'} - ${problem.problem_type || '타입 미정'}`).join('\n\n')}\n\n아래에서 변환할 문제를 선택해주세요.`,
+            timestamp: new Date().toISOString()
+          };
+          
+          const updatedChat = {
+            ...selectedChat,
+            messages: [...(selectedChat?.messages || []), resultMessage]
+          };
+          
+          setChats(chats.map(c => c.id === selectedChatId ? updatedChat : c));
+          
+          if (problemTexts.length > 1) {
+            setSelectableProblems(problemTexts);
+            setSelectedProblems(new Set());
+            return;
+          } else {
+            await processSingleProblem(problemTexts[0]);
+            return;
+          }
+        } else {
+          // 영어 문제가 없는 경우 기존 방식으로 처리
+          const extractedText = await extractTextFromPdf(filesToProcess[0]);
+          fullTextToProcess += `\n\n${extractedText}`;
+        }
       } catch (error) {
         setErrorMessage(error);
+        setInputValue(textToProcess);
+        setAttachedFiles(filesToProcess);
         return;
       }
     }
 
+    // 텍스트 처리: 클라이언트에서 문제 분리 후 선택 UI 제공
     try {
-      const res = await api.post('/api/split-problems', { text: fullTextToProcess });
-      const problems = res.data.problems || [];
+      // 클라이언트에서 문제 분리 시도
+      const problems = splitProblemsOnClient(fullTextToProcess);
+      
       if (problems.length > 1) {
+        // 여러 문제가 있는 경우 선택 UI 표시
         setSelectableProblems(problems);
         setSelectedProblems(new Set());
-        // 입력 필드는 이미 위에서 클리어됨
+        appendLog(`📝 텍스트에서 ${problems.length}개 문제를 발견했습니다. 변환할 문제를 선택해주세요.`);
       } else {
+        // 단일 문제이거나 분리되지 않은 경우 바로 처리
         await processSingleProblem(fullTextToProcess);
       }
     } catch (err) {
-      setErrorMessage("문제 분할 중 오류가 발생했습니다.");
+      setErrorMessage("텍스트 처리 중 오류가 발생했습니다.");
       // 에러 발생 시 입력 내용 복원 (사용자 편의)
       setInputValue(textToProcess);
       setAttachedFiles(filesToProcess);
@@ -472,8 +944,6 @@ function App() {
     });
   };
 
-  const appendLog = (msg) => setLogs(logs => [...logs, `[${new Date().toLocaleString()}] ${msg}`]);
-
   const handleSaveLogs = () => {
     const blob = new Blob([logs.join('\n')], { type: 'text/plain;charset=utf-8' });
     saveAs(blob, `chat_logs_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`);
@@ -551,6 +1021,7 @@ function App() {
           chat={selectedChat}
           logs={userId === "root" ? logs : undefined}
           onSaveLogs={userId === "root" ? handleSaveLogs : undefined}
+          pdfProgressMessage={pdfProgressMessage}
         />
         <ChatInput
           value={inputValue}
@@ -568,6 +1039,7 @@ function App() {
           onCancelSelection={resetInputs}
         />
       </div>
+
     </div>
   );
 }

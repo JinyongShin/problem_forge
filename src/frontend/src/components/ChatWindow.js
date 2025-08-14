@@ -35,7 +35,7 @@ function Accordion({ title, content }) {
 }
 
 
-function ChatWindow({ chat, logs = [], onSaveLogs }) {
+function ChatWindow({ chat, logs = [], onSaveLogs, pdfProgressMessage }) {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -249,6 +249,31 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
             )}
           </div>
         ))}
+        
+        {/* PDF 진행률 메시지 */}
+        {pdfProgressMessage && (
+          <div style={{ 
+            marginBottom: 18, 
+            display: 'flex', 
+            flexDirection: 'row', 
+            alignItems: 'flex-end', 
+            gap: 8 
+          }}>
+            <div style={{
+              background: '#e8f5e8',
+              color: '#222',
+              borderRadius: 12,
+              padding: '10px 16px',
+              maxWidth: 'calc(100% - 120px)',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              border: '2px solid #4CAF50',
+              wordBreak: 'break-word',
+              animation: 'pulse 1.5s infinite'
+            }}>
+              <ReactMarkdown>{pdfProgressMessage.content}</ReactMarkdown>
+            </div>
+          </div>
+        )}
       </div>
       <style>{`
         .custom-spinner {
@@ -263,6 +288,10 @@ function ChatWindow({ chat, logs = [], onSaveLogs }) {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
         }
       `}</style>
     </div>

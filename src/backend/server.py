@@ -24,9 +24,7 @@ if SRC_DIR not in sys.path:
 from google.adk.cli.fast_api import get_fast_api_app
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
-from backend.preprocess import split_problems
-from google.adk.runners import InMemoryRunner
-from google.genai.types import Content, Part
+
 
 
 # Import main agent for /run endpoint - ADK가 자동으로 처리하므로 불필요
@@ -50,6 +48,11 @@ class SSELogHandler(logging.Handler):
     def emit(self, record):
         try:
             log_entry = self.format(record)
+            
+            # PDF 관련 로그인지 식별
+            is_pdf_log = any(name in record.name.lower() for name in ['pdf', 'parser'])
+            log_type = 'pdf_log' if is_pdf_log else 'server_log'
+            
             # 모든 활성 세션에 로그 전달
             for session_id, queue in log_queues.items():
                 try:
@@ -60,9 +63,11 @@ class SSELogHandler(logging.Handler):
                         except:
                             pass
                     queue.put_nowait({
-                        'type': 'server_log',
+                        'type': log_type,
                         'message': log_entry,
-                        'timestamp': record.created
+                        'timestamp': record.created,
+                        'logger_name': record.name,
+                        'level': record.levelname
                     })
                 except:
                     pass  # 큐에 넣기 실패해도 계속 진행
@@ -97,12 +102,92 @@ for logger_name in adk_loggers:
     adk_logger.addHandler(sse_handler)
     adk_logger.setLevel(logging.INFO)
 
-# FastAPI app initialization
+# PDF 파싱 에이전트 전용 로거 추가
+pdf_parser_logger = logging.getLogger('pdf_parser')
+pdf_parser_logger.addHandler(sse_handler)
+pdf_parser_logger.setLevel(logging.INFO)
+
+# PDF 파싱 관련 추가 로거들
+pdf_related_loggers = [
+    'pdf_agent',
+    'pdf_parser_root',
+    'google.adk.agents',
+    'google.adk.models',
+]
+
+for logger_name in pdf_related_loggers:
+    logger_obj = logging.getLogger(logger_name)
+    logger_obj.addHandler(sse_handler)
+    logger_obj.setLevel(logging.INFO)
+
+# FastAPI app initialization - 기본 agent 앱 등록 
 app = get_fast_api_app(
-    agents_dir=os.path.join(SRC_DIR, "agent"),  # src/agent로 지정
+    agents_dir=os.path.join(SRC_DIR, "agent"),  # 기존 문제 변형 에이전트들 (agent 앱)
     web=True,            # True로 변경하여 /run 엔드포인트 활성화
     allow_origins=["*"], # CORS 허용
 )
+
+# 🚀 별도 PDF 파싱 에이전트 앱 생성 및 마운트
+try:
+    pdf_app = get_fast_api_app(
+        agents_dir=os.path.join(SRC_DIR, "pdf_agent"),  # PDF 파싱 에이전트들
+        web=True,  # PDF 앱도 독립적인 웹 서비스로 구성
+        allow_origins=["*"],
+    )
+    
+    # PDF 앱에 미들웨어 추가하여 요청 로깅
+    @pdf_app.middleware("http")
+    async def log_pdf_requests(request: Request, call_next):
+        # PDF 파싱 요청인 경우 로깅
+        if request.url.path.endswith("/run_sse"):
+            try:
+                # 요청 본문 읽기
+                body = await request.body()
+                if body:
+                    import json
+                    try:
+                        request_data = json.loads(body)
+                        if 'newMessage' in request_data and 'parts' in request_data['newMessage']:
+                            for part in request_data['newMessage']['parts']:
+                                if 'text' in part:
+                                    text_content = part['text']
+                                    pdf_parser_logger.info("=" * 80)
+                                    pdf_parser_logger.info("📡 PDF 파싱 요청 수신")
+                                    pdf_parser_logger.info("=" * 80)
+                                    pdf_parser_logger.info(f"📏 요청 텍스트 길이: {len(text_content)} 문자")
+                                    pdf_parser_logger.info("📝 요청 텍스트 전체 내용:")
+                                    pdf_parser_logger.info("-" * 50)
+                                    pdf_parser_logger.info(text_content)
+                                    pdf_parser_logger.info("-" * 50)
+                                    pdf_parser_logger.info("🚀 PDF 파싱 에이전트로 전달...")
+                    except:
+                        pass  # JSON 파싱 실패 시 무시
+                
+                # 요청 본문을 다시 설정 (FastAPI가 다시 읽을 수 있도록)
+                async def receive():
+                    return {"type": "http.request", "body": body}
+                request._receive = receive
+                
+            except Exception as e:
+                pdf_parser_logger.error(f"요청 로깅 중 오류: {e}")
+        
+        response = await call_next(request)
+        return response
+    
+    # PDF 앱을 메인 앱에 서브앱으로 마운트
+    app.mount("/pdf", pdf_app)
+    pdf_parser_logger.info("📦 PDF 파싱 에이전트 앱을 /pdf 경로에 마운트 완료")
+    
+except Exception as e:
+    pdf_parser_logger.error(f"❌ PDF 파싱 에이전트 앱 마운트 실패: {e}")
+    pdf_parser_logger.info("🔄 수동 PDF 에이전트 임포트 시도...")
+    
+    # 실패 시 수동으로 PDF 에이전트만 로드
+    try:
+        from pdf_agent import root_agent as pdf_root_agent
+        pdf_parser_logger.info("📦 PDF 루트 에이전트 로드 완료")
+    except Exception as fallback_error:
+        pdf_parser_logger.error(f"❌ PDF 에이전트 수동 로드 실패: {fallback_error}")
 
 # In-memory session storage - ADK가 자체 세션 관리를 하므로 불필요
 # sessions = {}
@@ -186,69 +271,13 @@ async def login_endpoint(request: Request) -> JSONResponse:
         )
 
 
-@app.post("/api/split-problems")
-async def split_problems_endpoint(request: Request) -> JSONResponse:
-    """
-    텍스트 내 다중 문제 분할 API
-    
-    Args:
-        request: 분할할 텍스트 요청
-        
-    Returns:
-        JSONResponse: 분할된 문제 리스트
-    """
-    try:
-        data = await request.json()
-        text = data.get("text")
-        
-        if not text or not text.strip():
-            raise HTTPException(
-                status_code=400, 
-                detail="분할할 텍스트를 입력해주세요."
-            )
-        
-        # 디버깅: 받은 텍스트 정보 로깅
-        logger.info(f"[백엔드] 받은 텍스트 길이: {len(text)}자")
-        logger.info(f"[백엔드] 'Part Ⅲ 테스트편' 포함: {'Part Ⅲ 테스트편' in text}")
-        logger.info(f"[백엔드] '정답과 해설' 포함: {'정답과 해설' in text}")
-        
-        # 문항 코드 찾기
-        import re
-        codes = re.findall(r'\d{5}-\d{4}', text)
-        if codes:
-            logger.info(f"[백엔드] 발견된 문항 코드: {codes[:10]}")  # 처음 10개
-        else:
-            logger.info(f"[백엔드] 문항 코드를 찾을 수 없음")
-        
-        logger.info(f"[백엔드] 텍스트 처음 500자: {text[:500]}")
-        
-        problems = split_problems(text)
-        logger.info(f"Problems split successfully: {len(problems)} problems found")
-        
-        # 문제 타입 통계 (re는 이미 import됨)
-        exercise_count = sum(1 for p in problems if p.startswith('Exercises'))
-        code_count = sum(1 for p in problems if re.match(r'^\d{5}-\d{4}', p))
-        other_count = len(problems) - exercise_count - code_count
-        
-        logger.info(f"[백엔드] 문제 타입: 문항코드 {code_count}개, Exercises {exercise_count}개, 기타 {other_count}개")
-        
-        # 첫 번째 문제 미리보기
-        if problems:
-            logger.info(f"[백엔드] 첫 번째 문제 미리보기 (200자): {problems[0][:200]}")
-        
-        return JSONResponse(content={"problems": problems})
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Problem splitting error: {e}")
-        raise HTTPException(
-            status_code=500, 
-            detail=f"문제 분할 중 오류가 발생했습니다: {str(e)}"
-        )
 
 
 
+
+
+
+# 기존 API 엔드포인트 제거 - 이제 모든 PDF 파싱은 ADK 방식으로 처리
 
 
 @app.get("/api/logs/{session_id}")
@@ -307,7 +336,7 @@ async def get_logs_stream(session_id: str):
     
     return StreamingResponse(
         log_stream(),
-        media_type="text/plain",
+        media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
